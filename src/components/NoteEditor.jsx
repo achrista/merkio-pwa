@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import { X, Trash2, Bold, Italic, UnderlineIcon } from 'lucide-react'
 
-const YELLOW = '#FFF000'
+const YELLOW = '#FEFCE8' // sehr blasses Gelb = Tailwind yellow-50, wie die Notiz-Einträge in der Liste
 const BLUE = '#0050AA'
 
 export default function NoteEditor({ item, onClose, onSave, onDelete }) {
@@ -31,7 +31,7 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: YELLOW }}>
       {/* Toolbar */}
-      <div className="flex items-center px-4 h-14 shrink-0 border-b border-yellow-300 gap-2">
+      <div className="flex items-center px-4 h-14 shrink-0 border-b border-yellow-200 gap-2">
         <button onClick={onClose} className="p-1 rounded hover:bg-yellow-200">
           <X size={22} color={BLUE} />
         </button>
@@ -86,7 +86,7 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('items.note_title_label')}
-          className="w-full text-xl font-semibold bg-transparent outline-none text-gray-800 placeholder-gray-400 border-b border-yellow-300 pb-2"
+          className="w-full text-xl font-semibold bg-transparent outline-none text-gray-800 placeholder-gray-400 border-b border-yellow-200 pb-2"
         />
       </div>
 

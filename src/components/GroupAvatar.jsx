@@ -14,11 +14,14 @@ export default function GroupAvatar({ group, size = 32 }) {
   const fontSize = Math.round(size * 0.45)
 
   if (group.iconData) {
+    const src = group.iconData.startsWith('data:')
+      ? group.iconData
+      : `data:image/jpeg;base64,${group.iconData}`
     return (
       <img
-        src={group.iconData}
+        src={src}
         alt={group.name}
-        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover' }}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
       />
     )
   }
@@ -32,6 +35,7 @@ export default function GroupAvatar({ group, size = 32 }) {
           backgroundColor: bg,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize,
+          flexShrink: 0,
         }}
       >
         {group.iconKey}

@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react'
 
-export default function TopBar({ onMenuClick, title }) {
+export default function TopBar({ onMenuClick }) {
   return (
     <header
       className="flex items-center h-14 px-4 shrink-0 min-[900px]:hidden"
@@ -13,7 +13,7 @@ export default function TopBar({ onMenuClick, title }) {
       >
         <Menu size={24} />
       </button>
-      <span className="text-white font-semibold text-lg">Merkio</span>
+      <img src="/logo-wordmark.png" alt="Merkio" className="h-9 w-auto" />
     </header>
   )
 }

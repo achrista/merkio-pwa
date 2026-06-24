@@ -79,7 +79,7 @@ export default function Sidebar({ groups, activeGroupId, onSelectGroup, onLogout
         className="flex items-center justify-between px-4 h-14 shrink-0"
         style={{ backgroundColor: BLUE }}
       >
-        <span className="text-white font-bold text-lg">Merkio</span>
+        <img src="/logo-wordmark.png" alt="Merkio" className="h-8 w-auto" />
         {onClose && (
           <button onClick={onClose} className="text-white">
             <X size={20} />

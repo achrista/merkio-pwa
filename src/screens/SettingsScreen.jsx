@@ -2,12 +2,264 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Copy, Trash2, LogOut, Store, Users, ChevronRight } from 'lucide-react'
+import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Users, Mail, Copy, Check, UserMinus, LogOut } from 'lucide-react'
 import api from '../api/client'
 import i18n from '../i18n/index.js'
+import { memberDisplayName } from '../components/ItemRow'
 
 const BLUE = '#0050AA'
 const LANGS = ['de', 'en', 'fr']
+
+function ListTypeIcon({ type }) {
+  if (type === 'todo') return <CheckSquare size={15} color={BLUE} />
+  if (type === 'notes') return <StickyNote size={15} color={BLUE} />
+  return <ShoppingCart size={15} color={BLUE} />
+}
+
+function GroupSettingsRow({ group, meId, navigate, onDeleteList, onGroupsChanged }) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [inviteMsg, setInviteMsg] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [confirm, setConfirm] = useState(null) // { type: 'remove'|'leave'|'delete', member? }
+  const [actionMsg, setActionMsg] = useState('')
+
+  const isOwner = group.role === 'owner'
+
+  const { data: listsData } = useQuery({
+    queryKey: ['lists', group.id],
+    queryFn: () => api.get(`/groups/${group.id}/lists`).then((r) => r.data),
+    enabled: open,
+  })
+  const lists = listsData?.lists ?? []
+
+  const { data: membersData } = useQuery({
+    queryKey: ['members', group.id],
+    queryFn: () => api.get(`/groups/${group.id}/members`).then((r) => r.data),
+    enabled: open,
+  })
+  const members = membersData?.members ?? []
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(group.inviteCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {}
+  }
+
+  async function sendEmailInvite() {
+    const e = email.trim()
+    if (!e) return
+    setInviteMsg('')
+    try {
+      await api.post(`/groups/${group.id}/send-invite`, { email: e })
+      setEmail('')
+      setInviteMsg(t('drawer.invite_sent'))
+      setTimeout(() => setInviteMsg(''), 2500)
+    } catch {
+      setInviteMsg(t('drawer.invite_failed'))
+    }
+  }
+
+  async function doRemoveMember(userId) {
+    try {
+      await api.delete(`/groups/${group.id}/members/${userId}`)
+      queryClient.invalidateQueries({ queryKey: ['members', group.id] })
+    } catch (err) { console.error('removeMember failed', err) }
+  }
+
+  async function doLeave() {
+    try {
+      await api.delete(`/groups/${group.id}/members/${meId}`)
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      onGroupsChanged?.()
+    } catch (err) { console.error('leave failed', err) }
+  }
+
+  async function doDeleteGroup() {
+    setActionMsg('')
+    try {
+      await api.delete(`/groups/${group.id}`)
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      onGroupsChanged?.()
+    } catch (err) {
+      if (err.response?.status === 409) setActionMsg(t('settings.group_delete_blocked'))
+      else console.error('deleteGroup failed', err)
+    }
+  }
+
+  function runConfirm() {
+    const c = confirm
+    setConfirm(null)
+    if (!c) return
+    if (c.type === 'remove') doRemoveMember(c.member.userId)
+    else if (c.type === 'leave') doLeave()
+    else if (c.type === 'delete') doDeleteGroup()
+  }
+
+  const confirmText = confirm?.type === 'remove'
+    ? t('settings.remove_member_text', { member: memberDisplayName(confirm.member), group: group.name })
+    : confirm?.type === 'leave'
+      ? t('settings.leave_text', { name: group.name })
+      : confirm?.type === 'delete'
+        ? t('settings.delete_group_text', { name: group.name })
+        : ''
+  const confirmTitle = confirm?.type === 'remove'
+    ? t('settings.remove_member_title')
+    : confirm?.type === 'leave'
+      ? t('settings.leave_title')
+      : confirm?.type === 'delete'
+        ? t('settings.delete_group_title')
+        : ''
+
+  return (
+    <div className="border-b border-gray-100 last:border-0">
+      <div className="flex items-center w-full px-4 py-3 gap-2">
+        <button onClick={() => setOpen(!open)} className="text-gray-400 p-0.5">
+          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </button>
+        <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
+        <button
+          onClick={() => navigate(`/groups/${group.id}/stores`)}
+          className="flex items-center gap-1 text-xs text-blue-600 hover:bg-blue-50 px-2 py-1 rounded"
+        >
+          <Store size={14} />
+          {t('settings.stores_button')}
+        </button>
+      </div>
+
+      {open && (
+        <div className="pb-3 pl-9 pr-4 space-y-5">
+          {/* Members */}
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+              <Users size={13} /> {t('settings.members')}
+            </div>
+            <div className="space-y-1.5">
+              {members.map((m) => (
+                <div key={m.userId} className="flex items-center gap-2">
+                  <span className="flex-1 text-sm text-gray-700 truncate">{memberDisplayName(m)}</span>
+                  {m.role === 'owner' && (
+                    <span className="text-[10px] font-semibold uppercase text-blue-600 bg-blue-50 rounded px-1.5 py-0.5">
+                      {t('settings.owner')}
+                    </span>
+                  )}
+                  {isOwner && m.userId !== meId && (
+                    <button
+                      onClick={() => setConfirm({ type: 'remove', member: m })}
+                      className="text-gray-300 hover:text-red-500 p-0.5"
+                      title={t('settings.remove_member')}
+                    >
+                      <UserMinus size={15} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Invite */}
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+              <Mail size={13} /> {t('drawer.invite_email_cd')}
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs text-gray-400">{t('groups.invite_code')}:</span>
+              <code className="text-sm font-mono bg-gray-100 rounded px-2 py-1 flex-1 text-gray-700">{group.inviteCode}</code>
+              <button
+                onClick={copyCode}
+                title={t('settings.copy_invite')}
+                className="p-1.5 rounded border border-gray-200 text-gray-500 hover:bg-gray-50"
+              >
+                {copied ? <Check size={15} className="text-green-600" /> : <Copy size={15} />}
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendEmailInvite()}
+                placeholder={t('drawer.email_address')}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+              />
+              <button
+                onClick={sendEmailInvite}
+                disabled={!email.trim()}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-white disabled:opacity-40"
+                style={{ backgroundColor: BLUE }}
+              >
+                {t('common.send')}
+              </button>
+            </div>
+            {inviteMsg && <div className="text-xs text-gray-500 mt-1">{inviteMsg}</div>}
+          </div>
+
+          {/* Lists */}
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">{t('settings.lists')}</div>
+            {lists.length === 0 ? (
+              <div className="text-xs text-gray-400 py-1">{t('drawer.no_lists')}</div>
+            ) : lists.map((list) => (
+              <div key={list.id} className="flex items-center gap-2 py-1.5">
+                <ListTypeIcon type={list.type} />
+                <span className="flex-1 text-sm text-gray-700 truncate">{list.name}</span>
+                <button
+                  onClick={() => onDeleteList(list)}
+                  className="text-gray-300 hover:text-red-400 p-0.5"
+                  aria-label={t('common.delete')}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Danger zone */}
+          <div className="pt-1">
+            {isOwner ? (
+              <button
+                onClick={() => setConfirm({ type: 'delete' })}
+                className="flex items-center gap-1.5 text-sm text-red-500 hover:underline"
+              >
+                <Trash2 size={15} /> {t('settings.delete_group')}
+              </button>
+            ) : (
+              <button
+                onClick={() => setConfirm({ type: 'leave' })}
+                className="flex items-center gap-1.5 text-sm text-red-500 hover:underline"
+              >
+                <LogOut size={15} /> {t('settings.leave')}
+              </button>
+            )}
+            {actionMsg && <div className="text-xs text-red-500 mt-1">{actionMsg}</div>}
+          </div>
+        </div>
+      )}
+
+      {/* Confirm dialog */}
+      {confirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
+            <h3 className="font-semibold text-gray-800">{confirmTitle}</h3>
+            <p className="text-sm text-gray-500">{confirmText}</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setConfirm(null)} className="px-4 py-2 text-sm text-gray-600">
+                {t('common.cancel')}
+              </button>
+              <button onClick={runConfirm} className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg">
+                {confirm.type === 'remove' ? t('settings.remove') : confirm.type === 'leave' ? t('settings.leave') : t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function Section({ title, children }) {
   return (
@@ -46,8 +298,7 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
   const [newPw, setNewPw] = useState('')
   const [pwMsg, setPwMsg] = useState('')
   const [showDeleteAccount, setShowDeleteAccount] = useState(false)
-  const [editProfile, setEditProfile] = useState(false)
-  const [editPw, setEditPw] = useState(false)
+  const [deleteListTarget, setDeleteListTarget] = useState(null) // { list, activeItemCount }
 
   const { data: meData } = useQuery({
     queryKey: ['me'],
@@ -108,6 +359,33 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
       await api.delete('/auth/account')
       onLogout()
     } catch {}
+  }
+
+  // First attempt: delete without force. On 409 (active items) ask for confirmation.
+  async function requestDeleteList(list) {
+    try {
+      await api.delete(`/lists/${list.id}`)
+      queryClient.invalidateQueries({ queryKey: ['lists', list.groupId] })
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setDeleteListTarget({ list, activeItemCount: err.response.data?.activeItemCount ?? 0 })
+      } else {
+        console.error('deleteList failed', err)
+      }
+    }
+  }
+
+  async function confirmForceDeleteList() {
+    const list = deleteListTarget?.list
+    if (!list) return
+    try {
+      await api.delete(`/lists/${list.id}?force=true`)
+      queryClient.invalidateQueries({ queryKey: ['lists', list.groupId] })
+    } catch (err) {
+      console.error('force deleteList failed', err)
+    } finally {
+      setDeleteListTarget(null)
+    }
   }
 
   const groups = groupsData?.groups ?? []
@@ -202,23 +480,20 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
         </div>
       </Section>
 
-      {/* Groups */}
+      {/* Groups: Märkte + Listen löschen */}
       <Section title={t('settings.groups')}>
         {groups.length === 0 && (
           <div className="px-4 py-3 text-sm text-gray-400">{t('drawer.no_groups')}</div>
         )}
         {groups.map((group) => (
-          <div key={group.id} className="border-b border-gray-100 last:border-0">
-            <button
-              onClick={() => navigate(`/groups/${group.id}/stores`)}
-              className="flex items-center w-full px-4 py-3 gap-3 hover:bg-gray-50 text-left"
-            >
-              <Store size={16} color={BLUE} />
-              <span className="flex-1 text-sm font-medium text-gray-800">{group.name}</span>
-              <span className="text-xs text-gray-400">{t('settings.stores_button')}</span>
-              <ChevronRight size={16} color="#ccc" />
-            </button>
-          </div>
+          <GroupSettingsRow
+            key={group.id}
+            group={group}
+            meId={meData?.user?.id}
+            navigate={navigate}
+            onDeleteList={requestDeleteList}
+            onGroupsChanged={onGroupsChanged}
+          />
         ))}
       </Section>
 
@@ -239,13 +514,35 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
             <h3 className="font-semibold text-gray-800">{t('settings.delete_account')}</h3>
-            <p className="text-sm text-gray-500">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <p className="text-sm text-gray-500">{t('settings.delete_account_confirm')}</p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowDeleteAccount(false)} className="px-4 py-2 text-sm text-gray-600">
                 {t('common.cancel')}
               </button>
               <button onClick={deleteAccount} className="px-4 py-2 text-sm text-white bg-red-500 rounded-lg font-semibold">
                 {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteListTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-4">
+            <h3 className="font-semibold text-gray-800">{t('settings.delete_list_title')}</h3>
+            <p className="text-sm text-gray-500">
+              {t('settings.delete_list_text', {
+                name: deleteListTarget.list.name,
+                count: deleteListTarget.activeItemCount,
+              })}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setDeleteListTarget(null)} className="px-4 py-2 text-sm text-gray-600">
+                {t('common.cancel')}
+              </button>
+              <button onClick={confirmForceDeleteList} className="px-4 py-2 text-sm text-white bg-red-500 rounded-lg font-semibold">
+                {t('settings.delete_anyway')}
               </button>
             </div>
           </div>

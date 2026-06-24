@@ -92,8 +92,8 @@ export default function AuthScreen({ onSuccess }) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="px-8 py-6" style={{ backgroundColor: BLUE }}>
-          <h1 className="text-white text-2xl font-bold text-center">Merkio</h1>
+        <div className="px-8 py-6 flex flex-col items-center" style={{ backgroundColor: BLUE }}>
+          <img src="/logo-wordmark.png" alt="Merkio" className="h-12 w-auto mb-2" />
           <p className="text-blue-200 text-center text-sm mt-1">
             {mode === 'login' ? t('auth.login') : t('auth.register')}
           </p>

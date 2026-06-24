@@ -98,12 +98,19 @@ export default function ListsScreen() {
     queryFn: () => api.get(`/groups/${groupId}/lists`).then((r) => r.data),
   })
 
+  // Group name is not part of the lists response — derive it from the groups list.
+  const { data: groupsData } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get('/groups').then((r) => r.data),
+  })
+
   const lists = data?.lists ?? []
+  const groupName = groupsData?.groups?.find((g) => g.id === Number(groupId))?.name ?? '…'
 
   return (
     <div className="p-4 max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold text-gray-800">{data?.group?.name ?? '…'}</h1>
+        <h1 className="text-xl font-semibold text-gray-800">{groupName}</h1>
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg text-white"
