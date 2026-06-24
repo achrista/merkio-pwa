@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0050AA" />
+    <meta name="description" content="Merkio – Einkaufslisten, To-dos & Notizen" />
+    <title>Merkio</title>
+    <script>
+      // Restore SPA redirect after GitHub Pages 404 fallback
+      var redirect = sessionStorage.getItem('spa_redirect');
+      if (redirect && window.location.search === '?redirect=1') {
+        sessionStorage.removeItem('spa_redirect');
+        window.history.replaceState(null, '', redirect);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
