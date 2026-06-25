@@ -26,6 +26,8 @@ export default function ItemsScreen() {
   const [showSug, setShowSug] = useState(false)
   const [groupByStore, setGroupByStore] = useState(false)
   const [groupByPriority, setGroupByPriority] = useState(false)
+  const [noteExpanded, setNoteExpanded] = useState(false)
+  const [noteText, setNoteText] = useState('')
   const inputRef = useRef(null)
 
   // List meta (type + name) — not included in the items response
@@ -70,6 +72,14 @@ export default function ItemsScreen() {
   const storesEnabled = (settingsData?.settings?.storesEnabled ?? 1) === 1
   const activeStores = stores.filter((s) => s.active)
   const canGroupByStore = !isNotes && !isTodo && storesEnabled && activeStores.length > 0
+
+  // Shared group note for this list (visible to all members) – key "list"
+  const { data: notesData } = useQuery({
+    queryKey: ['listNotes', Number(listId)],
+    queryFn: () => api.get(`/lists/${listId}/notes`).then((r) => r.data.notes),
+    enabled: !!listId && !isNotes,
+  })
+  const listNote = notesData?.list ?? null
 
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['items', Number(listId)] })
@@ -190,7 +200,28 @@ export default function ItemsScreen() {
   }
 
   async function saveListNote(content) {
-    try { await api.put(`/lists/${listId}/notes/list`, { content }) } catch (err) { console.error('saveListNote failed', err) }
+    try {
+      await api.put(`/lists/${listId}/notes/list`, { content })
+      queryClient.setQueryData(['listNotes', Number(listId)], (old) => ({
+        ...(old ?? { list: null, done: null }),
+        list: content || null,
+      }))
+    } catch (err) { console.error('saveListNote failed', err) }
+  }
+
+  function toggleNote() {
+    setNoteText(listNote ?? '')
+    setNoteExpanded((v) => !v)
+  }
+
+  async function saveNoteEdit() {
+    await saveListNote(noteText)
+    setNoteExpanded(false)
+  }
+
+  function cancelNote() {
+    setNoteText(listNote ?? '')
+    setNoteExpanded(false)
   }
 
   const isCheckedItem = (i) => !!i.checked
@@ -276,6 +307,11 @@ export default function ItemsScreen() {
           <ArrowLeft size={22} />
         </button>
         <span className="text-white font-semibold text-lg truncate">{listName}</span>
+        {!isNotes && (
+          <button onClick={toggleNote} title={t('items.note')} className="ml-auto shrink-0">
+            <StickyNote size={22} color={listNote?.trim() ? YELLOW : 'white'} />
+          </button>
+        )}
       </div>
 
       {/* Mobile sub-header with list name */}
@@ -284,6 +320,11 @@ export default function ItemsScreen() {
           <ArrowLeft size={18} />
         </button>
         <span className="font-medium text-sm text-blue-900 truncate">{listName}</span>
+        {!isNotes && (
+          <button onClick={toggleNote} title={t('items.note')} className="ml-auto shrink-0 text-blue-800">
+            <StickyNote size={18} color={listNote?.trim() ? '#ca8a04' : undefined} />
+          </button>
+        )}
       </div>
 
       {/* Add input */}
@@ -341,6 +382,28 @@ export default function ItemsScreen() {
         <div className="px-4 py-2 bg-white border-b border-gray-100 flex gap-2">
           {canGroupByStore && toggleBtn(groupByStore, () => setGroupByStore((v) => !v), Store, t('items.group_by_store'))}
           {isTodo && toggleBtn(groupByPriority, () => setGroupByPriority((v) => !v), Flag, t('items.group_by_priority'))}
+        </div>
+      )}
+
+      {/* Shared group note (visible to all members) */}
+      {!isNotes && noteExpanded && (
+        <div className="px-4 py-3 bg-yellow-50 border-b border-yellow-200 space-y-2">
+          <textarea
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+            placeholder={t('items.note_placeholder')}
+            rows={3}
+            autoFocus
+            className="w-full border border-yellow-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-yellow-400 resize-y"
+          />
+          <div className="flex justify-end gap-2">
+            <button onClick={cancelNote} className="px-3 py-1.5 text-sm text-gray-600 rounded-lg hover:bg-gray-100">
+              {t('common.cancel')}
+            </button>
+            <button onClick={saveNoteEdit} className="px-4 py-1.5 text-sm font-semibold text-white rounded-lg" style={{ backgroundColor: BLUE }}>
+              {t('common.save')}
+            </button>
+          </div>
         </div>
       )}
 
