@@ -171,6 +171,8 @@
     "owner": "Eigentümer",
     "remove_member": "Mitglied entfernen",
     "lists": "Listen",
+    "group_name": "Gruppenname",
+    "rename_list": "Liste umbenennen",
     "list_deleted": "Liste \"{{name}}\" gelöscht.",
     "stores_button": "Märkte",
     "group_delete_blocked": "Gruppe kann nicht gelöscht werden, solange noch andere Mitglieder dabei sind.",

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Users, Mail, Copy, Check, UserMinus, LogOut } from 'lucide-react'
+import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
 import api from '../api/client'
 import i18n from '../i18n/index.js'
 import { memberDisplayName } from '../components/ItemRow'
@@ -25,6 +25,10 @@ function GroupSettingsRow({ group, meId, navigate, onDeleteList, onGroupsChanged
   const [copied, setCopied] = useState(false)
   const [confirm, setConfirm] = useState(null) // { type: 'remove'|'leave'|'delete', member? }
   const [actionMsg, setActionMsg] = useState('')
+  const [nameValue, setNameValue] = useState(group.name)
+  const [nameMsg, setNameMsg] = useState('')
+  const [editingListId, setEditingListId] = useState(null)
+  const [listName, setListName] = useState('')
 
   const isOwner = group.role === 'owner'
 
@@ -91,6 +95,32 @@ function GroupSettingsRow({ group, meId, navigate, onDeleteList, onGroupsChanged
     }
   }
 
+  async function saveGroupName() {
+    const n = nameValue.trim()
+    if (!n || n === group.name) return
+    setNameMsg('')
+    try {
+      await api.patch(`/groups/${group.id}`, { name: n })
+      queryClient.invalidateQueries({ queryKey: ['groups'] })
+      onGroupsChanged?.()
+      setNameMsg(t('settings.saved'))
+      setTimeout(() => setNameMsg(''), 2000)
+    } catch (err) { console.error('renameGroup failed', err) }
+  }
+
+  async function saveListName(list) {
+    const n = listName.trim()
+    if (!n || n === list.name) { setEditingListId(null); return }
+    try {
+      await api.patch(`/lists/${list.id}`, { name: n })
+      queryClient.invalidateQueries({ queryKey: ['lists'] })
+    } catch (err) {
+      console.error('renameList failed', err)
+    } finally {
+      setEditingListId(null)
+    }
+  }
+
   function runConfirm() {
     const c = confirm
     setConfirm(null)
@@ -133,6 +163,29 @@ function GroupSettingsRow({ group, meId, navigate, onDeleteList, onGroupsChanged
 
       {open && (
         <div className="pb-3 pl-9 pr-4 space-y-5">
+          {/* Group name */}
+          <div>
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">{t('settings.group_name')}</div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveGroupName()}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400"
+              />
+              <button
+                onClick={saveGroupName}
+                disabled={!nameValue.trim() || nameValue.trim() === group.name}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium text-white disabled:opacity-40"
+                style={{ backgroundColor: BLUE }}
+              >
+                {t('common.save')}
+              </button>
+            </div>
+            {nameMsg && <div className="text-xs text-green-600 mt-1">{nameMsg}</div>}
+          </div>
+
           {/* Members */}
           <div>
             <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
@@ -206,14 +259,45 @@ function GroupSettingsRow({ group, meId, navigate, onDeleteList, onGroupsChanged
             ) : lists.map((list) => (
               <div key={list.id} className="flex items-center gap-2 py-1.5">
                 <ListTypeIcon type={list.type} />
-                <span className="flex-1 text-sm text-gray-700 truncate">{list.name}</span>
-                <button
-                  onClick={() => onDeleteList(list)}
-                  className="text-gray-300 hover:text-red-400 p-0.5"
-                  aria-label={t('common.delete')}
-                >
-                  <Trash2 size={15} />
-                </button>
+                {editingListId === list.id ? (
+                  <>
+                    <input
+                      autoFocus
+                      type="text"
+                      value={listName}
+                      onChange={(e) => setListName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveListName(list)
+                        if (e.key === 'Escape') setEditingListId(null)
+                      }}
+                      className="flex-1 border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
+                    />
+                    <button onClick={() => saveListName(list)} className="text-blue-600 hover:bg-blue-50 p-0.5 rounded" aria-label={t('common.save')}>
+                      <Check size={16} />
+                    </button>
+                    <button onClick={() => setEditingListId(null)} className="text-gray-400 hover:bg-gray-100 p-0.5 rounded" aria-label={t('common.cancel')}>
+                      <X size={16} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-1 text-sm text-gray-700 truncate">{list.name}</span>
+                    <button
+                      onClick={() => { setEditingListId(list.id); setListName(list.name) }}
+                      className="text-gray-300 hover:text-blue-500 p-0.5"
+                      aria-label={t('settings.rename_list')}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => onDeleteList(list)}
+                      className="text-gray-300 hover:text-red-400 p-0.5"
+                      aria-label={t('common.delete')}
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -365,7 +449,7 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
   async function requestDeleteList(list) {
     try {
       await api.delete(`/lists/${list.id}`)
-      queryClient.invalidateQueries({ queryKey: ['lists', list.groupId] })
+      queryClient.invalidateQueries({ queryKey: ['lists'] })
     } catch (err) {
       if (err.response?.status === 409) {
         setDeleteListTarget({ list, activeItemCount: err.response.data?.activeItemCount ?? 0 })
@@ -380,7 +464,7 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
     if (!list) return
     try {
       await api.delete(`/lists/${list.id}?force=true`)
-      queryClient.invalidateQueries({ queryKey: ['lists', list.groupId] })
+      queryClient.invalidateQueries({ queryKey: ['lists'] })
     } catch (err) {
       console.error('force deleteList failed', err)
     } finally {

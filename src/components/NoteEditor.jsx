@@ -35,7 +35,7 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
         <button onClick={onClose} className="p-1 rounded hover:bg-yellow-200">
           <X size={22} color={BLUE} />
         </button>
-        <span className="flex-1 text-sm font-semibold text-gray-700">{t('items.note_title_label')}</span>
+        <span className="flex-1" />
 
         {/* Format buttons */}
         <button

@@ -345,7 +345,7 @@ export default function ItemsScreen() {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
         {isLoading && <div className="text-center py-16 text-gray-400">{t('common.loading')}</div>}
         {!isLoading && error && (
           <div className="text-center py-16 text-red-500">{t('common.error', { msg: error.message })}</div>
@@ -406,7 +406,7 @@ export default function ItemsScreen() {
           <>
             {groups
               ? groups.map((g) => (
-                  <div key={g.key} className="space-y-2">
+                  <div key={g.key} className="space-y-1.5">
                     <div className="flex items-center gap-2 pt-2 pb-0.5">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{g.label}</span>
                       <span className="text-xs text-gray-400">({g.items.length})</span>

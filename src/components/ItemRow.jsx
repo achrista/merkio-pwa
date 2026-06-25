@@ -77,7 +77,7 @@ export default function ItemRow({ item, stores, members, listType, onToggle, onD
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm flex items-center px-3 py-2.5 gap-2.5 transition-opacity ${done ? 'opacity-50' : ''}`}>
+    <div className={`bg-white rounded-xl shadow-sm flex items-center px-3 py-2 gap-2.5 transition-opacity ${done ? 'opacity-50' : ''}`}>
       {/* Category dot */}
       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: categoryColor }} />
 

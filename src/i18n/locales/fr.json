@@ -171,6 +171,8 @@
     "owner": "Propriétaire",
     "remove_member": "Retirer le membre",
     "lists": "Listes",
+    "group_name": "Nom du groupe",
+    "rename_list": "Renommer la liste",
     "list_deleted": "Liste « {{name}} » supprimée.",
     "stores_button": "Magasins",
     "group_delete_blocked": "Le groupe ne peut pas être supprimé tant qu'il reste d'autres membres.",

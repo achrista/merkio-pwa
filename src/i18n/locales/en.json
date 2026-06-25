@@ -171,6 +171,8 @@
     "owner": "Owner",
     "remove_member": "Remove member",
     "lists": "Lists",
+    "group_name": "Group name",
+    "rename_list": "Rename list",
     "list_deleted": "List \"{{name}}\" deleted.",
     "stores_button": "Stores",
     "group_delete_blocked": "The group cannot be deleted while other members are still in it.",
