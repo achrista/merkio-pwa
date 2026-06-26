@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
+import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Star, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
 import api from '../api/client'
 import i18n from '../i18n/index.js'
 import { getTheme, setTheme } from '../theme.js'
@@ -371,6 +371,73 @@ function Row({ label, value, onClick, danger }) {
   )
 }
 
+function FeedbackSection() {
+  const { t } = useTranslation()
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [status, setStatus] = useState('') // '' | 'sending' | 'ok' | 'error'
+  const canSend = rating >= 1 && comment.trim().length > 0 && status !== 'sending'
+
+  async function submit() {
+    if (!canSend) return
+    setStatus('sending')
+    try {
+      await api.post('/feedback', { rating, comment: comment.trim(), source: 'PWA' })
+      setRating(0)
+      setComment('')
+      setStatus('ok')
+      setTimeout(() => setStatus(''), 3500)
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <Section title={t('settings.feedback')}>
+      <div className="px-4 py-3 space-y-3">
+        <div className="text-sm text-gray-600">{t('settings.feedback_rating_label')}</div>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setRating(n)}
+              aria-label={`${n}`}
+              className="p-0.5"
+            >
+              <Star
+                size={30}
+                className={n <= rating ? '' : 'text-gray-300'}
+                color={n <= rating ? '#facc15' : undefined}
+                fill={n <= rating ? '#facc15' : 'none'}
+              />
+            </button>
+          ))}
+        </div>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder={t('settings.feedback_placeholder')}
+          rows={3}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400 resize-y"
+        />
+        <div className="flex items-center gap-3">
+          {status === 'ok' && <span className="text-green-600 text-xs">{t('settings.feedback_sent')}</span>}
+          {status === 'error' && <span className="text-red-500 text-xs">{t('settings.feedback_error')}</span>}
+          <button
+            onClick={submit}
+            disabled={!canSend}
+            className="ml-auto px-4 py-1.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40"
+            style={{ backgroundColor: BLUE }}
+          >
+            {status === 'sending' ? t('settings.feedback_sending') : t('settings.feedback_send')}
+          </button>
+        </div>
+      </div>
+    </Section>
+  )
+}
+
 export default function SettingsScreen({ onLogout, onGroupsChanged }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -605,6 +672,9 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
           />
         ))}
       </Section>
+
+      {/* Feedback */}
+      <FeedbackSection />
 
       {/* Account */}
       <Section title={t('settings.account')}>
