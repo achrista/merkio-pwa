@@ -289,7 +289,7 @@ export default function ItemsScreen() {
       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
       style={active
         ? { backgroundColor: YELLOW, color: BLUE, borderColor: YELLOW }
-        : { color: '#666', borderColor: '#ddd' }}
+        : { color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
     >
       <Icon size={14} />
       <span className="hidden sm:inline">{label}</span>

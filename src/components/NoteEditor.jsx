@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import { X, Trash2, Bold, Italic, UnderlineIcon } from 'lucide-react'
 
-const YELLOW = '#FEFCE8' // sehr blasses Gelb = Tailwind yellow-50, wie die Notiz-Einträge in der Liste
+const YELLOW = 'var(--note-paper)' // Notiz-Papier: hell-gelb / im Dark Mode dunkel (siehe index.css)
 const BLUE = '#0050AA'
 
 export default function NoteEditor({ item, onClose, onSave, onDelete }) {
@@ -40,21 +40,21 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
         {/* Format buttons */}
         <button
           onClick={() => editor?.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded text-sm font-bold transition-colors ${editor?.isActive('bold') ? 'bg-blue-200 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm font-bold transition-colors ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_bold')}
         >
           <Bold size={18} />
         </button>
         <button
           onClick={() => editor?.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('italic') ? 'bg-blue-200 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_italic')}
         >
           <Italic size={18} />
         </button>
         <button
           onClick={() => editor?.chain().focus().toggleUnderline().run()}
-          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('underline') ? 'bg-blue-200 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('underline') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_underline')}
         >
           <UnderlineIcon size={18} />

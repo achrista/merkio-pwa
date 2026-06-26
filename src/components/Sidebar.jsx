@@ -31,7 +31,7 @@ function GroupSection({ group, isActive, onSelect, navigate }) {
       <button
         onClick={() => { setOpen(!open); onSelect(group) }}
         className="flex items-center w-full px-3 py-2 gap-2 hover:bg-blue-50 transition-colors"
-        style={{ color: isActive ? BLUE : '#333' }}
+        style={{ color: isActive ? BLUE : 'var(--color-gray-700)' }}
       >
         <GroupAvatar group={group} size={24} />
         <span className="flex-1 text-left text-sm font-medium truncate">{group.name}</span>

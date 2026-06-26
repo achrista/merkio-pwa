@@ -162,7 +162,7 @@ export default function AuthScreen({ onSuccess }) {
                       className="flex-1 py-1.5 rounded-full text-sm font-medium border transition-colors"
                       style={locale === l
                         ? { backgroundColor: BLUE, color: '#fff', borderColor: BLUE }
-                        : { backgroundColor: '#fff', color: '#666', borderColor: '#ddd' }}
+                        : { backgroundColor: 'var(--pill-bg)', color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
                     >
                       {l.toUpperCase()}
                     </button>

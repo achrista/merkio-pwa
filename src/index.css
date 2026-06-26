@@ -3,12 +3,78 @@
 :root {
   --merkio-blue: #0050AA;
   --merkio-yellow: #FFF000;
+
+  /* Tokens für Inline-Styles (Hell-Modus) – siehe .dark für die dunklen Werte */
+  --pill-fg: #666666;       /* Text inaktiver Pillen/Buttons */
+  --pill-border: #dddddd;   /* Rahmen inaktiver Pillen, Checkbox */
+  --pill-bg: #ffffff;       /* Hintergrund inaktiver Pillen */
+  --pill-sel-bg: #e8f0fe;   /* ausgewählte Kategorie/Markt-Kachel */
+  --note-paper: #FEFCE8;    /* Notiz-Editor-Hintergrund */
 }
+
+/* ============================================================
+   Dark Mode
+   Tailwind v4 erzeugt Farb-Utilities als var(--color-*). Indem wir
+   diese Variablen unter .dark überschreiben, passen sich bg/text/
+   border/hover automatisch in ALLEN Komponenten an – auch in solchen,
+   die wir nicht einzeln angefasst haben.
+   Ausnahme: --color-white bleibt unverändert (sonst bräche text-white
+   auf blauen Headern/Buttons). Weiße Flächen stellen wir gezielt über
+   ".dark .bg-white" um. Markenblau (#0050AA, inline) bleibt in beiden
+   Modi gleich.
+   ============================================================ */
+.dark {
+  /* Grau-Rampe: Flächen/Rahmen werden dunkel, Text wird hell */
+  --color-gray-50:  #141c27;
+  --color-gray-100: #1c2734;
+  --color-gray-200: #2a3543;
+  --color-gray-300: #3d4b5c;
+  --color-gray-400: #8b97a8;
+  --color-gray-500: #a4b0c0;
+  --color-gray-600: #bcc7d4;
+  --color-gray-700: #d3dbe4;
+  --color-gray-800: #e6ebf1;
+  --color-gray-900: #f2f5f8;
+
+  /* getönte Flächen dunkel, blaue Text-Töne aufhellen */
+  --color-blue-50:  #16273a;
+  --color-blue-100: #1c3a55;
+  --color-blue-700: #7cb3fb;
+  --color-blue-800: #9cc5fc;
+  --color-blue-900: #c0dcfd;
+
+  /* Notiz-Töne (gelb) dunkel */
+  --color-yellow-50:  #2a2510;
+  --color-yellow-100: #342d14;
+  --color-yellow-200: #4a401c;
+  --color-yellow-300: #5a4e22;
+  --color-yellow-400: #6b5c2a;
+
+  /* Hinweis-Flächen (Erfolg/Fehler) dunkel – Textfarben bleiben */
+  --color-green-50: #122a1c;
+  --color-red-50:   #2c1517;
+
+  /* Tokens für Inline-Styles (Dunkel-Modus) */
+  --pill-fg: #c3ccd8;
+  --pill-border: #3d4b5c;
+  --pill-bg: #1a2433;
+  --pill-sel-bg: #16273a;
+  --note-paper: #2a2510;
+}
+
+/* Weiße Karten/Dialoge/Sidebar → dunkle Oberfläche (text-white bleibt weiß) */
+.dark .bg-white { background-color: #1a2433; }
 
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  background-color: #ffffff;
+  color: #1a1c20;
+}
+.dark body {
+  background-color: #0e1620;
+  color: var(--color-gray-800);
 }
 
 #root {

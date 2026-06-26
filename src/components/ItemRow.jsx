@@ -111,7 +111,7 @@ export default function ItemRow({ item, stores, members, listType, onToggle, onD
         <button
           onClick={onToggle}
           className="w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-          style={{ borderColor: '#ccc', backgroundColor: 'transparent' }}
+          style={{ borderColor: 'var(--pill-border)', backgroundColor: 'transparent' }}
           aria-label="toggle"
         />
       )}

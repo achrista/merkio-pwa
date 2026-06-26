@@ -90,7 +90,7 @@ export default function ItemDetailModal({ item, stores, members, listType, onClo
                       className="text-sm px-3 py-1.5 rounded-full border transition-colors"
                       style={storeId == null
                         ? { backgroundColor: BLUE, color: '#fff', borderColor: BLUE }
-                        : { color: '#777', borderColor: '#ddd' }}
+                        : { color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
                     >
                       {t('items.no_store')}
                     </button>
@@ -103,7 +103,7 @@ export default function ItemDetailModal({ item, stores, members, listType, onClo
                           className="text-sm px-3 py-1.5 rounded-full border-2 transition-colors font-medium"
                           style={sel
                             ? { backgroundColor: BLUE, color: '#fff', borderColor: BLUE }
-                            : { color: BLUE, borderColor: BLUE, backgroundColor: '#fff' }}
+                            : { color: BLUE, borderColor: BLUE, backgroundColor: 'var(--pill-bg)' }}
                         >
                           {s.customName || s.storeName}
                         </button>
@@ -128,7 +128,7 @@ export default function ItemDetailModal({ item, stores, members, listType, onClo
                       className="flex-1 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
                       style={priority === p
                         ? { backgroundColor: BLUE, color: '#fff', borderColor: BLUE }
-                        : { color: '#666', borderColor: '#ddd' }}
+                        : { color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
                     >
                       {p}
                     </button>
@@ -216,8 +216,8 @@ export default function ItemDetailModal({ item, stores, members, listType, onClo
                   onClick={() => setIconKey(key === iconKey ? '' : key)}
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-lg border transition-colors"
                   style={iconKey === key
-                    ? { borderColor: BLUE, backgroundColor: '#e8f0fe' }
-                    : { borderColor: '#eee' }}
+                    ? { borderColor: BLUE, backgroundColor: 'var(--pill-sel-bg)' }
+                    : { borderColor: 'var(--pill-border)' }}
                 >
                   {CATEGORY_ICONS[key]}
                 </button>

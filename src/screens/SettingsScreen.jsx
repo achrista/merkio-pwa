@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
 import api from '../api/client'
 import i18n from '../i18n/index.js'
+import { getTheme, setTheme } from '../theme.js'
 import { memberDisplayName } from '../components/ItemRow'
 
 const BLUE = '#0050AA'
@@ -375,6 +376,7 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [locale, setLocale] = useState(localStorage.getItem('locale') ?? 'de')
+  const [theme, setThemeState] = useState(getTheme())
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [saveMsg, setSaveMsg] = useState('')
@@ -422,6 +424,11 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
     try {
       await api.patch('/auth/profile', { locale: lang })
     } catch {}
+  }
+
+  function changeTheme(value) {
+    setThemeState(value)
+    setTheme(value)
   }
 
   async function changePassword() {
@@ -520,9 +527,27 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
                 className="flex-1 py-1.5 rounded-full text-sm font-medium border transition-colors"
                 style={locale === l
                   ? { backgroundColor: BLUE, color: '#fff', borderColor: BLUE }
-                  : { color: '#666', borderColor: '#ddd' }}
+                  : { color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
               >
                 {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* Appearance */}
+      <Section title={t('settings.appearance')}>
+        <div className="px-4 py-3">
+          <div className="flex gap-2">
+            {[['system', t('settings.theme_system')], ['light', t('settings.theme_light')], ['dark', t('settings.theme_dark')]].map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => changeTheme(v)}
+                className={`flex-1 py-1.5 rounded-full text-sm font-medium border transition-colors ${theme === v ? 'text-white' : 'text-gray-600 border-gray-300'}`}
+                style={theme === v ? { backgroundColor: BLUE, borderColor: BLUE } : undefined}
+              >
+                {label}
               </button>
             ))}
           </div>

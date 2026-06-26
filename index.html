@@ -10,6 +10,20 @@
     <meta name="description" content="Merkio – Einkaufslisten, To-dos & Notizen" />
     <title>Merkio</title>
     <script>
+      // Dark Mode FOUC-frei setzen, bevor React lädt
+      (function () {
+        try {
+          var p = localStorage.getItem('theme');
+          var dark = p === 'dark' || ((!p || p === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#0e1620');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script>
       // Restore SPA redirect after GitHub Pages 404 fallback
       var redirect = sessionStorage.getItem('spa_redirect');
       if (redirect && window.location.search === '?redirect=1') {
