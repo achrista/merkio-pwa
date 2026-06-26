@@ -89,8 +89,21 @@ export default function Sidebar({ groups, activeGroupId, onSelectGroup, onLogout
 
       {/* Groups + Lists */}
       <div className="flex-1 overflow-y-auto py-2">
-        <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          {t('drawer.groups')}
+        <div className="flex items-center justify-between px-3 py-1">
+          <button
+            onClick={() => onNavigate('/groups')}
+            className="text-xs font-semibold text-gray-500 uppercase tracking-wide hover:text-blue-700 transition-colors"
+          >
+            {t('drawer.groups')}
+          </button>
+          <button
+            onClick={() => onNavigate('/groups', { state: { create: true } })}
+            title={t('groups.new_title')}
+            aria-label={t('groups.new_title')}
+            className="text-gray-400 hover:text-blue-700 transition-colors p-1 -mr-1"
+          >
+            <Plus size={16} />
+          </button>
         </div>
         {groups.length === 0 && (
           <div className="px-3 py-2 text-sm text-gray-400">{t('drawer.no_groups')}</div>

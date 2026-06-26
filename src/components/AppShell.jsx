@@ -42,7 +42,7 @@ export default function AppShell({ onLogout }) {
           activeGroupId={activeGroupId}
           onSelectGroup={selectGroup}
           onLogout={onLogout}
-          onNavigate={(path) => navigate(path)}
+          onNavigate={(path, opts) => navigate(path, opts)}
         />
       </div>
 
@@ -62,7 +62,7 @@ export default function AppShell({ onLogout }) {
               activeGroupId={activeGroupId}
               onSelectGroup={selectGroup}
               onLogout={onLogout}
-              onNavigate={(path) => { navigate(path); setDrawerOpen(false) }}
+              onNavigate={(path, opts) => { navigate(path, opts); setDrawerOpen(false) }}
               onClose={() => setDrawerOpen(false)}
             />
           </div>

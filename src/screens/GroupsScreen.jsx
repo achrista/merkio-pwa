@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import api from '../api/client'
 import GroupAvatar from '../components/GroupAvatar'
@@ -112,6 +113,16 @@ export default function GroupsScreen({ groups, onSelectGroup, onGroupsChanged })
   const { t } = useTranslation()
   const [showCreate, setShowCreate] = useState(false)
   const [showJoin, setShowJoin] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // „+" aus der Seitenleiste öffnet direkt den Erstellen-Dialog (wie in der Android-App)
+  useEffect(() => {
+    if (location.state?.create) {
+      setShowCreate(true)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location, navigate])
 
   return (
     <div className="p-4 max-w-lg mx-auto">
