@@ -19,6 +19,11 @@
     "error": "Error: {{msg}}",
     "error_code": "Error {{code}}"
   },
+  "errorBoundary": {
+    "title": "Oops – something went wrong",
+    "text": "The app ran into an error. Please reload it. We have been notified automatically.",
+    "reload": "Reload app"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",

@@ -19,6 +19,11 @@
     "error": "Erreur : {{msg}}",
     "error_code": "Erreur {{code}}"
   },
+  "errorBoundary": {
+    "title": "Oups – une erreur est survenue",
+    "text": "L'application a rencontré une erreur. Veuillez la recharger. Nous avons été prévenus automatiquement.",
+    "reload": "Recharger l'application"
+  },
   "auth": {
     "login": "Connexion",
     "register": "S'inscrire",

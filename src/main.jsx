@@ -5,6 +5,7 @@ import './index.css'
 import './theme.js'
 import './i18n/index.js'
 import App from './App.jsx'
+import ErrorFallback from './components/ErrorFallback'
 import * as Sentry from '@sentry/react'
 
 // Fehler-Tracking – aktiv nur, wenn VITE_SENTRY_DSN beim Build gesetzt ist.
@@ -23,8 +24,10 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   </StrictMode>,
 )

@@ -19,6 +19,11 @@
     "error": "Fehler: {{msg}}",
     "error_code": "Fehler {{code}}"
   },
+  "errorBoundary": {
+    "title": "Ups – etwas ist schiefgelaufen",
+    "text": "Die App ist auf einen Fehler gestoßen. Bitte lade sie neu. Wir wurden automatisch benachrichtigt.",
+    "reload": "App neu laden"
+  },
   "auth": {
     "login": "Login",
     "register": "Registrieren",
