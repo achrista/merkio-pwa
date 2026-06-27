@@ -33,6 +33,7 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: https://api.merkio.de/api/v1
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
