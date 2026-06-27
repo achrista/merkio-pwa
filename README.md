@@ -1,16 +1,45 @@
-# React + Vite
+# Merkio – Web-App (PWA)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Progressive Web App von **Merkio** – gemeinsame Listen (Einkauf, To-dos, Notizen) in Echtzeit. Volle Parität zur Android-App, läuft im Browser und ist installierbar.
 
-Currently, two official plugins are available:
+**Live:** https://app.merkio.de · Backend: https://api.merkio.de · Landing: https://merkio.de
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech Stack
 
-## React Compiler
+- **React 19 + Vite**
+- **TanStack Query** (Daten/Caching) + **react-router-dom**
+- **Tailwind CSS v4** (Dark Mode über CSS-Variablen unter `.dark`)
+- **react-i18next** (DE/EN/FR)
+- **Tiptap** (WYSIWYG-Notiz-Editor)
+- **vite-plugin-pwa** (Service Worker, installierbar)
+- **@sentry/react** (Fehler-Tracking, DSN-gesteuert)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the Oxlint configuration
+- Gruppen, Listen (Einkauf/To-do/Notizen), Items, Märkte, Mitgliederverwaltung
+- Echtzeit-Sync über SSE (`/lists/:id/events`, Token als Query-Param)
+- **Dark Mode** – System + manueller Umschalter (Einstellungen → Darstellung)
+- **Feedback** – Sterne (1–5) + Kommentar (Einstellungen → Feedback) → `POST /feedback`
+- „Neue Gruppe" jederzeit über die Seitenleiste
+- Mehrsprachig DE/EN/FR
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Entwicklung
+
+```bash
+npm install
+npm run dev        # Dev-Server (Vite)
+npm run build      # Produktions-Build nach dist/
+npm run preview    # Build lokal testen
+```
+
+## Umgebungsvariablen (Build-Zeit)
+
+- `VITE_API_URL` — Basis-URL der API (Prod: `https://api.merkio.de/api/v1`)
+- `VITE_SENTRY_DSN` — Sentry-DSN; wenn gesetzt, wird Fehler-Tracking aktiviert (ohne DSN per Tree-Shaking nicht im Bundle)
+
+## Deployment
+
+GitHub Actions ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)) baut bei Push auf `main` und deployt nach **GitHub Pages** (Custom Domain `app.merkio.de`, CNAME).
+
+- `VITE_API_URL` ist im Workflow fest gesetzt.
+- `VITE_SENTRY_DSN` kommt aus dem gleichnamigen GitHub-**Secret** (Repo → Settings → Secrets and variables → Actions). Nach dem Anlegen einmal neu deployen, damit der Build es übernimmt.
