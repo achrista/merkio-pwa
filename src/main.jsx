@@ -31,3 +31,10 @@ createRoot(document.getElementById('root')).render(
     </Sentry.ErrorBoundary>
   </StrictMode>,
 )
+
+// Start-Splash ausblenden, sobald die App gemountet ist
+const splash = document.getElementById('app-splash')
+if (splash) {
+  splash.classList.add('hide')
+  setTimeout(() => splash.remove(), 350)
+}

@@ -7,8 +7,22 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0050AA" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Merkio" />
     <meta name="description" content="Merkio – Einkaufslisten, To-dos & Notizen" />
     <title>Merkio</title>
+    <style>
+      /* Start-Splash: sofort sichtbarer App-Look statt weißem Bildschirm beim Laden */
+      #app-splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        background: #0050AA; transition: opacity .3s ease;
+      }
+      #app-splash img { width: 160px; height: auto; }
+      #app-splash.hide { opacity: 0; pointer-events: none; }
+    </style>
     <script>
       // Dark Mode FOUC-frei setzen, bevor React lädt
       (function () {
@@ -33,7 +47,15 @@
     </script>
   </head>
   <body>
+    <div id="app-splash"><img src="/logo-wordmark.png" alt="Merkio" /></div>
     <div id="root"></div>
+    <script>
+      // Sicherheitsnetz: Splash spätestens nach 8 s ausblenden (falls das Bundle hängt)
+      setTimeout(function () {
+        var s = document.getElementById('app-splash');
+        if (s) s.classList.add('hide');
+      }, 8000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
