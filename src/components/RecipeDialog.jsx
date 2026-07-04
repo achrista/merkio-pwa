@@ -6,10 +6,16 @@ import { CATEGORY_ICONS } from './ItemRow'
 
 const BLUE = '#0050AA'
 
+// Erste http(s)-URL aus dem Text ziehen (Satzzeichen am Ende abschneiden).
+const URL_RE = /https?:\/\/[^\s"'<>]+/i
+function extractUrl(text) {
+  const m = String(text || '').match(URL_RE)
+  return m ? m[0].replace(/[.,;:!?)\]]+$/, '') : null
+}
+
 export default function RecipeDialog({ onClose, onImport, onNoteUpdate }) {
   const { t } = useTranslation()
   const [recipeText, setRecipeText] = useState('')
-  const [sourceUrl, setSourceUrl] = useState('')
   const [portions, setPortions] = useState('4')
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState(null)
@@ -40,14 +46,15 @@ export default function RecipeDialog({ onClose, onImport, onNoteUpdate }) {
   }
 
   function doImport() {
-    const note = sourceUrl.trim()
-    if (note) onNoteUpdate?.(note)
+    const url = extractUrl(recipeText)
+    if (url) onNoteUpdate?.(url)
     const ingredients = (result.ingredients ?? []).filter((_, i) => selected.has(i))
     onImport(ingredients)
     onClose()
   }
 
   const portionsInt = parseInt(portions, 10) || 4
+  const detectedUrl = extractUrl(recipeText)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -68,15 +75,8 @@ export default function RecipeDialog({ onClose, onImport, onNoteUpdate }) {
                 rows={6}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 resize-none"
               />
-              <input
-                type="text"
-                value={sourceUrl}
-                onChange={(e) => setSourceUrl(e.target.value)}
-                placeholder={t('items.recipe_source_placeholder')}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500"
-              />
-              {sourceUrl.trim() && (
-                <p className="text-xs text-gray-400">{t('items.recipe_source_hint')}</p>
+              {detectedUrl && (
+                <p className="text-xs text-gray-400">{t('items.recipe_url_hint')}</p>
               )}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">{t('items.portions')}</span>
