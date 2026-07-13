@@ -2,13 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Trash2, StickyNote, UtensilsCrossed, Store, Flag } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, StickyNote, UtensilsCrossed, Store, Flag, LayoutList, Pencil } from 'lucide-react'
 import api, { getAccessToken } from '../api/client'
 import NoteEditor from '../components/NoteEditor'
-import ItemRow from '../components/ItemRow'
+import ItemRow, { CATEGORY_ICONS } from '../components/ItemRow'
 import ItemDetailModal from '../components/ItemDetailModal'
 import RecipeDialog from '../components/RecipeDialog'
+import CategoryOrderDialog from '../components/CategoryOrderDialog'
 import { parseItemInput, isSimilarName, mergeQuantity } from '../utils/itemInput'
+import { resolveCategoryOrder } from '../utils/categories'
 
 const BLUE = '#0050AA'
 const YELLOW = '#FFF000'
@@ -28,6 +30,8 @@ export default function ItemsScreen() {
   const [showSug, setShowSug] = useState(false)
   const [groupByStore, setGroupByStore] = useState(false)
   const [groupByPriority, setGroupByPriority] = useState(false)
+  const [groupByCategory, setGroupByCategory] = useState(false)
+  const [showCatOrder, setShowCatOrder] = useState(false)
   const [noteExpanded, setNoteExpanded] = useState(false)
   const [noteText, setNoteText] = useState('')
   const inputRef = useRef(null)
@@ -74,6 +78,8 @@ export default function ItemsScreen() {
   const storesEnabled = (settingsData?.settings?.storesEnabled ?? 1) === 1
   const activeStores = stores.filter((s) => s.active)
   const canGroupByStore = !isNotes && !isTodo && storesEnabled && activeStores.length > 0
+  const canGroupByCategory = !isNotes && !isTodo
+  const categoryOrder = resolveCategoryOrder(settingsData?.settings?.categoryOrder)
 
   // Shared group note for this list (visible to all members) – key "list"
   const { data: notesData } = useQuery({
@@ -271,12 +277,32 @@ export default function ItemsScreen() {
     setNoteExpanded(false)
   }
 
+  async function saveCategoryOrder(newOrder) {
+    setShowCatOrder(false)
+    try {
+      await api.patch(`/groups/${groupId}/settings`, { categoryOrder: JSON.stringify(newOrder) })
+      queryClient.invalidateQueries({ queryKey: ['groupSettings', Number(groupId)] })
+    } catch (err) { console.error('saveCategoryOrder failed', err) }
+  }
+
   const isCheckedItem = (i) => !!i.checked
   const activeItems = items.filter((i) => !isCheckedItem(i))
   const doneItems = items.filter(isCheckedItem)
 
   // Build grouped sections for active items
   function buildGroups() {
+    if (canGroupByCategory && groupByCategory) {
+      const groups = []
+      const usedIds = new Set()
+      for (const key of categoryOrder) {
+        const its = activeItems.filter((i) => (i.iconKey || 'other') === key)
+        its.forEach((i) => usedIds.add(i.id))
+        if (its.length) groups.push({ key: `cat-${key}`, label: `${CATEGORY_ICONS[key] ?? '📦'} ${t('items.cat_' + key)}`, items: its })
+      }
+      const rest = activeItems.filter((i) => !usedIds.has(i.id))
+      if (rest.length) groups.push({ key: 'cat-rest', label: `📦 ${t('items.cat_other')}`, items: rest })
+      return groups
+    }
     if (canGroupByStore && groupByStore) {
       const groups = []
       const usedIds = new Set()
@@ -425,10 +451,22 @@ export default function ItemsScreen() {
       </div>
 
       {/* Grouping toolbar */}
-      {(canGroupByStore || isTodo) && !isNotes && (
-        <div className="px-4 py-2 bg-white border-b border-gray-100 flex gap-2">
-          {canGroupByStore && toggleBtn(groupByStore, () => setGroupByStore((v) => !v), Store, t('items.group_by_store'))}
+      {(canGroupByStore || canGroupByCategory || isTodo) && !isNotes && (
+        <div className="px-4 py-2 bg-white border-b border-gray-100 flex gap-2 items-center">
+          {canGroupByStore && toggleBtn(groupByStore, () => { setGroupByStore((v) => !v); setGroupByCategory(false) }, Store, t('items.group_by_store'))}
+          {canGroupByCategory && toggleBtn(groupByCategory, () => { setGroupByCategory((v) => !v); setGroupByStore(false) }, LayoutList, t('items.group_by_category'))}
           {isTodo && toggleBtn(groupByPriority, () => setGroupByPriority((v) => !v), Flag, t('items.group_by_priority'))}
+          {groupByCategory && (
+            <button
+              onClick={() => setShowCatOrder(true)}
+              title={t('items.category_order_title')}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+              style={{ color: 'var(--pill-fg)', borderColor: 'var(--pill-border)' }}
+            >
+              <Pencil size={14} />
+              <span className="hidden sm:inline">{t('items.category_order_edit')}</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -567,6 +605,15 @@ export default function ItemsScreen() {
           onClose={() => setShowRecipe(false)}
           onImport={importRecipe}
           onNoteUpdate={saveListNote}
+        />
+      )}
+
+      {/* Kategorie-Reihenfolge bearbeiten */}
+      {showCatOrder && (
+        <CategoryOrderDialog
+          order={categoryOrder}
+          onClose={() => setShowCatOrder(false)}
+          onSave={saveCategoryOrder}
         />
       )}
 
