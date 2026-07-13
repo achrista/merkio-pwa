@@ -8,6 +8,7 @@ import NoteEditor from '../components/NoteEditor'
 import ItemRow from '../components/ItemRow'
 import ItemDetailModal from '../components/ItemDetailModal'
 import RecipeDialog from '../components/RecipeDialog'
+import { parseItemInput, isSimilarName, mergeQuantity } from '../utils/itemInput'
 
 const BLUE = '#0050AA'
 const YELLOW = '#FFF000'
@@ -22,6 +23,7 @@ export default function ItemsScreen() {
   const [openNote, setOpenNote] = useState(null)
   const [openItem, setOpenItem] = useState(null)
   const [showRecipe, setShowRecipe] = useState(false)
+  const [dupPrompt, setDupPrompt] = useState(null) // { existing, name, quantity } | null
   const [suggestions, setSuggestions] = useState([])
   const [showSug, setShowSug] = useState(false)
   const [groupByStore, setGroupByStore] = useState(false)
@@ -131,18 +133,63 @@ export default function ItemsScreen() {
     return () => { active = false; clearTimeout(timer) }
   }, [newItemName, isNotes, isTodo])
 
-  async function addItem(name = newItemName) {
-    const trimmed = name.trim()
-    if (!trimmed) return
+  async function createItem(itemName, quantity) {
     setNewItemName('')
     setShowSug(false)
     try {
-      await api.post(`/lists/${listId}/items`, isNotes ? { name: trimmed, content: '' } : { name: trimmed })
+      const body = { name: itemName }
+      if (quantity) body.quantity = quantity
+      await api.post(`/lists/${listId}/items`, body)
       invalidate()
     } catch (err) {
       console.error('addItem failed', err)
-      setNewItemName(trimmed)
+      setNewItemName(quantity ? `${itemName} ${quantity}` : itemName)
     }
+  }
+
+  async function addItem(name = newItemName) {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    // Notizen/To-dos: unverändert (keine Mengen-/Duplikat-Logik)
+    if (isNotes || isTodo) {
+      setNewItemName('')
+      setShowSug(false)
+      try {
+        await api.post(`/lists/${listId}/items`, isNotes ? { name: trimmed, content: '' } : { name: trimmed })
+        invalidate()
+      } catch (err) {
+        console.error('addItem failed', err)
+        setNewItemName(trimmed)
+      }
+      return
+    }
+    // Einkaufsliste: Name + Menge trennen und auf Duplikat prüfen
+    const { name: itemName, quantity } = parseItemInput(trimmed)
+    const dup = items.find((i) => !i.checked && isSimilarName(i.name, itemName))
+    if (dup) {
+      setShowSug(false)
+      setDupPrompt({ existing: dup, name: itemName, quantity })
+      return
+    }
+    await createItem(itemName, quantity)
+  }
+
+  async function confirmMerge() {
+    const { existing, quantity } = dupPrompt
+    setDupPrompt(null)
+    setNewItemName('')
+    const existingQty = [existing.quantity, existing.unit].filter(Boolean).join(' ')
+    const merged = mergeQuantity(existingQty, quantity ?? '')
+    try {
+      await api.patch(`/items/${existing.id}`, { quantity: merged, unit: null })
+      invalidate()
+    } catch (err) { console.error('merge failed', err) }
+  }
+
+  function addDupAsNew() {
+    const { name: itemName, quantity } = dupPrompt
+    setDupPrompt(null)
+    createItem(itemName, quantity)
   }
 
   function pickSuggestion(s) {
@@ -521,6 +568,43 @@ export default function ItemsScreen() {
           onImport={importRecipe}
           onNoteUpdate={saveListNote}
         />
+      )}
+
+      {/* Duplikat-Hinweis */}
+      {dupPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl p-6 w-80 shadow-xl space-y-4">
+            <h3 className="font-semibold text-gray-800">{t('items.dup_title')}</h3>
+            <p className="text-sm text-gray-500">
+              {t('items.dup_message', { name: dupPrompt.existing.name })}
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={confirmMerge}
+                className="w-full px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                style={{ backgroundColor: BLUE }}
+              >
+                {t('items.dup_merge')}
+              </button>
+              <button
+                onClick={addDupAsNew}
+                className="w-full px-4 py-2 rounded-lg text-sm text-gray-700 border border-gray-300"
+              >
+                {t('items.dup_add_new')}
+              </button>
+              <button
+                onClick={() => {
+                  const restore = dupPrompt.quantity ? `${dupPrompt.name} ${dupPrompt.quantity}` : dupPrompt.name
+                  setDupPrompt(null)
+                  setNewItemName(restore)
+                }}
+                className="w-full px-4 py-2 text-sm text-gray-500"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

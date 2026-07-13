@@ -82,3 +82,19 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* ============================================================
+   Notiz-Editor (Tiptap) – Inhaltsformatierung
+   Enter erzeugt einen Absatz <p> (größerer Abstand),
+   Umschalt+Enter einen weichen Umbruch <br> (enger).
+   Aufzählungen mit fester Einrückung.
+   ============================================================ */
+.ProseMirror { outline: none; }
+.ProseMirror p { margin: 0 0 0.65em; }
+.ProseMirror p:last-child { margin-bottom: 0; }
+.ProseMirror ul,
+.ProseMirror ol { margin: 0 0 0.65em; padding-left: 1.5rem; }
+.ProseMirror ul { list-style: disc; }
+.ProseMirror ol { list-style: decimal; }
+.ProseMirror li { margin: 0.15em 0; }
+.ProseMirror li p { margin: 0; }

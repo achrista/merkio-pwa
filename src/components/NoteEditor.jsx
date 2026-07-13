@@ -1,12 +1,23 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import { X, Trash2, Bold, Italic, UnderlineIcon } from 'lucide-react'
+import { TextStyle, Color } from '@tiptap/extension-text-style'
+import { X, Trash2, Bold, Italic, UnderlineIcon, List } from 'lucide-react'
 
 const YELLOW = 'var(--note-paper)' // Notiz-Papier: hell-gelb / im Dark Mode dunkel (siehe index.css)
 const BLUE = '#0050AA'
+
+// Textfarben – bewusst mittlere Töne, die auf dem gelben Notiz-Papier UND im
+// Dark Mode lesbar bleiben. "default" setzt keine feste Farbe (folgt dem Modus).
+const TEXT_COLORS = [
+  { key: 'default', value: null },
+  { key: 'blue', value: '#2563EB' },
+  { key: 'green', value: '#16A34A' },
+  { key: 'red', value: '#DC2626' },
+  { key: 'amber', value: '#CA8A04' },
+]
 
 export default function NoteEditor({ item, onClose, onSave, onDelete }) {
   const { t } = useTranslation()
@@ -14,7 +25,7 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
+    extensions: [StarterKit, Underline, TextStyle, Color],
     content: item?.content ?? '',
     editorProps: {
       attributes: {
@@ -27,6 +38,14 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
     const content = editor?.getHTML() ?? ''
     onSave(title, content)
   }
+
+  function applyColor(value) {
+    if (!editor) return
+    if (value) editor.chain().focus().setColor(value).run()
+    else editor.chain().focus().unsetColor().run()
+  }
+
+  const activeColor = editor?.getAttributes('textStyle').color ?? null
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: YELLOW }}>
@@ -59,6 +78,13 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
         >
           <UnderlineIcon size={18} />
         </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('bulletList') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          title={t('items.note_bullet_list')}
+        >
+          <List size={18} />
+        </button>
 
         {/* Soft delete */}
         <button
@@ -76,6 +102,25 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
         >
           {t('common.save')}
         </button>
+      </div>
+
+      {/* Farb-Leiste */}
+      <div className="flex items-center gap-3 px-4 h-10 shrink-0 border-b border-yellow-200">
+        <span className="text-xs text-gray-500">{t('items.note_color')}</span>
+        {TEXT_COLORS.map((c) => {
+          const isActive = c.value ? activeColor === c.value : !activeColor
+          return (
+            <button
+              key={c.key}
+              onClick={() => applyColor(c.value)}
+              title={t(`items.note_color_${c.key}`)}
+              className={`w-5 h-5 rounded-full border transition-transform ${isActive ? 'ring-2 ring-offset-1 ring-blue-500 scale-110' : 'border-gray-300'}`}
+              style={c.value ? { backgroundColor: c.value } : { backgroundColor: 'transparent' }}
+            >
+              {!c.value && <span className="block w-full h-full rounded-full border border-gray-500 text-gray-700 text-[10px] leading-4">A</span>}
+            </button>
+          )
+        })}
       </div>
 
       {/* Title */}
@@ -99,8 +144,8 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
       {showDeleteConfirm && (
         <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl p-6 w-72 shadow-xl space-y-4">
-            <h3 className="font-semibold text-gray-800">Notiz löschen?</h3>
-            <p className="text-sm text-gray-500">Die Notiz wird in den Papierkorb verschoben und kann wiederhergestellt werden.</p>
+            <h3 className="font-semibold text-gray-800">{t('items.note_delete_title')}</h3>
+            <p className="text-sm text-gray-500">{t('items.note_delete_hint')}</p>
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 text-sm text-gray-600">
                 {t('common.cancel')}
