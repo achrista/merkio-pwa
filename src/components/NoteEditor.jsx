@@ -26,6 +26,9 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
 
   const editor = useEditor({
     extensions: [StarterKit, Underline, TextStyle, Color],
+    // Tiptap v3 rendert per Default NICHT bei jeder Editor-Transaktion neu –
+    // dadurch blieben aktive Zustände (Farbe, Fett, …) in der Toolbar eingefroren.
+    shouldRerenderOnTransaction: true,
     content: item?.content ?? '',
     editorProps: {
       attributes: {

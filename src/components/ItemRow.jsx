@@ -17,7 +17,7 @@ export const CATEGORY_ICONS = {
   fruit_veg: '🍎', meat_fish: '🥩', drinks: '🥤', dairy: '🥛', frozen: '🧊',
   bakery: '🥖', sweets: '🍬', household: '🧹', drugstore: '💊', personal: '🧴',
   work: '💼', home_todo: '🏠', health: '❤️', finance: '💶', transport: '🚗',
-  communication: '📞', creative: '🎨', learning: '📚', other: '📦',
+  communication: '📞', creative: '🎨', learning: '📚', other: '📦', other_todo: '📦',
 }
 
 export function memberDisplayName(m) {

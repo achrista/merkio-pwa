@@ -10,7 +10,7 @@ import ItemDetailModal from '../components/ItemDetailModal'
 import RecipeDialog from '../components/RecipeDialog'
 import CategoryOrderDialog from '../components/CategoryOrderDialog'
 import { parseItemInput, isSimilarName, mergeQuantity } from '../utils/itemInput'
-import { resolveCategoryOrder } from '../utils/categories'
+import { resolveCategoryOrder, mergeCategoryOrder, SHOPPING_CATEGORIES, TODO_CATEGORIES } from '../utils/categories'
 
 const BLUE = '#0050AA'
 const YELLOW = '#FFF000'
@@ -78,8 +78,9 @@ export default function ItemsScreen() {
   const storesEnabled = (settingsData?.settings?.storesEnabled ?? 1) === 1
   const activeStores = stores.filter((s) => s.active)
   const canGroupByStore = !isNotes && !isTodo && storesEnabled && activeStores.length > 0
-  const canGroupByCategory = !isNotes && !isTodo
-  const categoryOrder = resolveCategoryOrder(settingsData?.settings?.categoryOrder)
+  const canGroupByCategory = !isNotes
+  const validCategories = isTodo ? TODO_CATEGORIES : SHOPPING_CATEGORIES
+  const categoryOrder = resolveCategoryOrder(settingsData?.settings?.categoryOrder, validCategories)
 
   // Shared group note for this list (visible to all members) – key "list"
   const { data: notesData } = useQuery({
@@ -280,7 +281,8 @@ export default function ItemsScreen() {
   async function saveCategoryOrder(newOrder) {
     setShowCatOrder(false)
     try {
-      await api.patch(`/groups/${groupId}/settings`, { categoryOrder: JSON.stringify(newOrder) })
+      const merged = mergeCategoryOrder(settingsData?.settings?.categoryOrder, newOrder, validCategories)
+      await api.patch(`/groups/${groupId}/settings`, { categoryOrder: merged })
       queryClient.invalidateQueries({ queryKey: ['groupSettings', Number(groupId)] })
     } catch (err) { console.error('saveCategoryOrder failed', err) }
   }
@@ -454,8 +456,8 @@ export default function ItemsScreen() {
       {(canGroupByStore || canGroupByCategory || isTodo) && !isNotes && (
         <div className="px-4 py-2 bg-white border-b border-gray-100 flex gap-2 items-center">
           {canGroupByStore && toggleBtn(groupByStore, () => { setGroupByStore((v) => !v); setGroupByCategory(false) }, Store, t('items.group_by_store'))}
-          {canGroupByCategory && toggleBtn(groupByCategory, () => { setGroupByCategory((v) => !v); setGroupByStore(false) }, LayoutList, t('items.group_by_category'))}
-          {isTodo && toggleBtn(groupByPriority, () => setGroupByPriority((v) => !v), Flag, t('items.group_by_priority'))}
+          {canGroupByCategory && toggleBtn(groupByCategory, () => { setGroupByCategory((v) => !v); setGroupByStore(false); setGroupByPriority(false) }, LayoutList, t('items.group_by_category'))}
+          {isTodo && toggleBtn(groupByPriority, () => { setGroupByPriority((v) => !v); setGroupByCategory(false) }, Flag, t('items.group_by_priority'))}
           {groupByCategory && (
             <button
               onClick={() => setShowCatOrder(true)}
