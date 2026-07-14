@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import { TextStyle, Color } from '@tiptap/extension-text-style'
@@ -26,15 +26,25 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
 
   const editor = useEditor({
     extensions: [StarterKit, Underline, TextStyle, Color],
-    // Tiptap v3 rendert per Default NICHT bei jeder Editor-Transaktion neu –
-    // dadurch blieben aktive Zustände (Farbe, Fett, …) in der Toolbar eingefroren.
-    shouldRerenderOnTransaction: true,
     content: item?.content ?? '',
     editorProps: {
       attributes: {
         class: 'min-h-[200px] outline-none text-gray-800 text-base leading-relaxed',
       },
     },
+  })
+
+  // Reaktive Toolbar-Zustände: useEditorState abonniert Editor-Transaktionen –
+  // ohne das bleiben aktive Markierungen (Farbe, Fett, …) eingefroren.
+  const toolbar = useEditorState({
+    editor,
+    selector: ({ editor: e }) => ({
+      bold: e?.isActive('bold') ?? false,
+      italic: e?.isActive('italic') ?? false,
+      underline: e?.isActive('underline') ?? false,
+      bulletList: e?.isActive('bulletList') ?? false,
+      color: e?.getAttributes('textStyle')?.color ?? null,
+    }),
   })
 
   function handleSave() {
@@ -48,7 +58,7 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
     else editor.chain().focus().unsetColor().run()
   }
 
-  const activeColor = editor?.getAttributes('textStyle').color ?? null
+  const activeColor = toolbar?.color ?? null
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: YELLOW }}>
@@ -62,28 +72,28 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
         {/* Format buttons */}
         <button
           onClick={() => editor?.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded text-sm font-bold transition-colors ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm font-bold transition-colors ${toolbar?.bold ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_bold')}
         >
           <Bold size={18} />
         </button>
         <button
           onClick={() => editor?.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm transition-colors ${toolbar?.italic ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_italic')}
         >
           <Italic size={18} />
         </button>
         <button
           onClick={() => editor?.chain().focus().toggleUnderline().run()}
-          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('underline') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm transition-colors ${toolbar?.underline ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_underline')}
         >
           <UnderlineIcon size={18} />
         </button>
         <button
           onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 rounded text-sm transition-colors ${editor?.isActive('bulletList') ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
+          className={`p-1.5 rounded text-sm transition-colors ${toolbar?.bulletList ? 'bg-blue-100 text-blue-800' : 'text-gray-700 hover:bg-yellow-200'}`}
           title={t('items.note_bullet_list')}
         >
           <List size={18} />
