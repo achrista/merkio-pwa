@@ -676,6 +676,19 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
       {/* Feedback */}
       <FeedbackSection />
 
+      {/* Über merkio */}
+      <Section title={t('settings.about')}>
+        <Row
+          label={t('settings.about_updates')}
+          value="merkio.de"
+          onClick={() => window.open('https://merkio.de', '_blank', 'noopener')}
+        />
+        <Row
+          label={t('settings.about_licenses')}
+          onClick={() => window.open('https://merkio.de/lizenzen.html', '_blank', 'noopener')}
+        />
+      </Section>
+
       {/* Account */}
       <Section title={t('settings.account')}>
         <Row
