@@ -140,17 +140,18 @@ export default function ItemsScreen() {
     return () => { active = false; clearTimeout(timer) }
   }, [newItemName, isNotes, isTodo])
 
-  async function createItem(itemName, quantity) {
+  async function createItem(itemName, quantity, unit) {
     setNewItemName('')
     setShowSug(false)
     try {
       const body = { name: itemName }
       if (quantity) body.quantity = quantity
+      if (unit) body.unit = unit
       await api.post(`/lists/${listId}/items`, body)
       invalidate()
     } catch (err) {
       console.error('addItem failed', err)
-      setNewItemName(quantity ? `${itemName} ${quantity}` : itemName)
+      setNewItemName([itemName, quantity, unit].filter(Boolean).join(' '))
     }
   }
 
@@ -171,22 +172,22 @@ export default function ItemsScreen() {
       return
     }
     // Einkaufsliste: Name + Menge trennen und auf Duplikat prüfen
-    const { name: itemName, quantity } = parseItemInput(trimmed)
+    const { name: itemName, quantity, unit } = parseItemInput(trimmed)
     const dup = items.find((i) => !i.checked && isSimilarName(i.name, itemName))
     if (dup) {
       setShowSug(false)
-      setDupPrompt({ existing: dup, name: itemName, quantity })
+      setDupPrompt({ existing: dup, name: itemName, quantity, unit })
       return
     }
-    await createItem(itemName, quantity)
+    await createItem(itemName, quantity, unit)
   }
 
   async function confirmMerge() {
-    const { existing, quantity } = dupPrompt
+    const { existing, quantity, unit } = dupPrompt
     setDupPrompt(null)
     setNewItemName('')
     const existingQty = [existing.quantity, existing.unit].filter(Boolean).join(' ')
-    const merged = mergeQuantity(existingQty, quantity ?? '')
+    const merged = mergeQuantity(existingQty, [quantity, unit].filter(Boolean).join(' '))
     try {
       await api.patch(`/items/${existing.id}`, { quantity: merged, unit: null })
       invalidate()
@@ -194,9 +195,9 @@ export default function ItemsScreen() {
   }
 
   function addDupAsNew() {
-    const { name: itemName, quantity } = dupPrompt
+    const { name: itemName, quantity, unit } = dupPrompt
     setDupPrompt(null)
-    createItem(itemName, quantity)
+    createItem(itemName, quantity, unit)
   }
 
   function pickSuggestion(s) {
@@ -643,7 +644,7 @@ export default function ItemsScreen() {
               </button>
               <button
                 onClick={() => {
-                  const restore = dupPrompt.quantity ? `${dupPrompt.name} ${dupPrompt.quantity}` : dupPrompt.name
+                  const restore = [dupPrompt.name, dupPrompt.quantity, dupPrompt.unit].filter(Boolean).join(' ')
                   setDupPrompt(null)
                   setNewItemName(restore)
                 }}

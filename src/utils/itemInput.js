@@ -2,11 +2,16 @@
 // Einkaufsliste. Gleiche Logik wie in der Android-App (ItemsScreen.kt), damit
 // sich beide Apps identisch verhalten.
 
-// "Tomaten 3" -> { name: "Tomaten", quantity: "3" }; sonst { name, quantity: null }
+// Erkennt eine Zahl (Punkt ODER Komma als Dezimaltrenner) am Ende der Eingabe,
+// getrennt vom Namen durch ein Leerzeichen - die Einheit direkt danach darf mit
+// oder ohne Leerzeichen an der Zahl kleben ("8Stück" wie "8 Stück").
+// "Paprika 8Stück" -> { name: "Paprika", quantity: "8", unit: "Stück" }
+// "Tomaten 3" -> { name: "Tomaten", quantity: "3", unit: null }; sonst quantity/unit: null
 export function parseItemInput(input) {
   const trimmed = (input ?? '').trim()
-  const m = trimmed.match(/^(.+?)\s+(\d+[\w.]*)$/)
-  return m ? { name: m[1].trim(), quantity: m[2] } : { name: trimmed, quantity: null }
+  const m = trimmed.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(\S.*)?$/)
+  if (!m) return { name: trimmed, quantity: null, unit: null }
+  return { name: m[1].trim(), quantity: m[2].replace(',', '.'), unit: m[3]?.trim() || null }
 }
 
 export function normalizeName(s) {
