@@ -116,9 +116,14 @@ export default function ItemRow({ item, stores, members, listType, onToggle, onD
         />
       )}
 
-      {/* Delete (done rows: permanent delete) */}
+      {/* Delete (done rows: direktes Löschen ohne Rückfrage, rechts vom „+") */}
       {done && (
-        <button onClick={onDelete} className="text-gray-300 hover:text-red-400 p-0.5 transition-colors shrink-0">
+        <button
+          onClick={onDelete}
+          title={t('common.delete')}
+          aria-label={t('common.delete')}
+          className="text-red-400 hover:text-red-600 p-0.5 transition-colors shrink-0"
+        >
           <Trash2 size={16} />
         </button>
       )}
