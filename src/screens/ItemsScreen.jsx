@@ -289,8 +289,18 @@ export default function ItemsScreen() {
   }
 
   const isCheckedItem = (i) => !!i.checked
-  const activeItems = items.filter((i) => !isCheckedItem(i))
-  const doneItems = items.filter(isCheckedItem)
+  // Aktive Items nach position, dann id — neue & wiederhergestellte Items bekommen
+  // serverseitig MAX(position)+1 und landen so unten. Explizit sortieren, damit auch
+  // per SSE (ohne Refetch) hereinkommende Updates sofort korrekt einsortiert werden.
+  const activeItems = items
+    .filter((i) => !isCheckedItem(i))
+    .sort((a, b) => (a.position - b.position) || (a.id - b.id))
+  // Abgehakte Items: zuletzt Abgehaktes oben (checkedAt absteigend); fehlender
+  // Zeitstempel sortiert nach unten. Array.sort ist stabil → bei gleichem checkedAt
+  // bleibt die Server-Reihenfolge (position, id) erhalten.
+  const doneItems = items
+    .filter(isCheckedItem)
+    .sort((a, b) => (b.checkedAt || '').localeCompare(a.checkedAt || ''))
 
   // Build grouped sections for active items
   function buildGroups() {
