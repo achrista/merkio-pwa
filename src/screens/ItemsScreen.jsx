@@ -94,6 +94,32 @@ export default function ItemsScreen() {
     queryClient.invalidateQueries({ queryKey: ['items', Number(listId)] })
   }, [queryClient, listId])
 
+  // Einziger Weg, ein Item zu ändern. Schickt `baseUpdatedAt` mit – den Server-Stand,
+  // auf dem die Änderung beruht. Hat jemand anderes (zweiter Tab, Android-App) das
+  // Item inzwischen geändert, antwortet der Server mit 409 statt die fremde Änderung
+  // zu überschreiben; wir übernehmen dann den Server-Stand.
+  //
+  // Die Basis wird bewusst aus dem Query-Cache gelesen und nicht aus dem
+  // übergebenen `item`: Letzteres kann aus einem länger offenen Dialog stammen,
+  // während SSE den Cache laufend aktuell hält.
+  const patchItem = useCallback(async (item, patch) => {
+    const cached = queryClient.getQueryData(['items', Number(listId)])
+    const fresh = (cached?.items ?? []).find((i) => i.id === item.id)
+    const baseUpdatedAt = fresh?.updatedAt ?? item.updatedAt
+    try {
+      await api.patch(`/items/${item.id}`, { ...patch, baseUpdatedAt })
+      invalidate()
+      return true
+    } catch (err) {
+      if (err.response?.status === 409) {
+        // Server ist neuer – unsere Änderung ist überholt und fällt weg.
+        invalidate()
+        return false
+      }
+      throw err
+    }
+  }, [queryClient, listId, invalidate])
+
   // SSE real-time updates (named events!)
   useEffect(() => {
     const token = getAccessToken()
@@ -189,8 +215,7 @@ export default function ItemsScreen() {
     const existingQty = [existing.quantity, existing.unit].filter(Boolean).join(' ')
     const merged = mergeQuantity(existingQty, [quantity, unit].filter(Boolean).join(' '))
     try {
-      await api.patch(`/items/${existing.id}`, { quantity: merged, unit: null })
-      invalidate()
+      await patchItem(existing, { quantity: merged, unit: null })
     } catch (err) { console.error('merge failed', err) }
   }
 
@@ -208,8 +233,7 @@ export default function ItemsScreen() {
 
   async function toggleItem(item) {
     try {
-      await api.patch(`/items/${item.id}`, { checked: !item.checked })
-      invalidate()
+      await patchItem(item, { checked: !item.checked })
     } catch (err) { console.error('toggle failed', err) }
   }
 
@@ -222,22 +246,19 @@ export default function ItemsScreen() {
 
   async function restoreNote(item) {
     try {
-      await api.patch(`/items/${item.id}`, { checked: false })
-      invalidate()
+      await patchItem(item, { checked: false })
     } catch (err) { console.error('restore failed', err) }
   }
 
   async function saveNote(item, name, content) {
     try {
-      await api.patch(`/items/${item.id}`, { name, content })
-      invalidate()
+      await patchItem(item, { name, content })
     } catch (err) { console.error('saveNote failed', err) }
   }
 
   async function saveItem(item, patch) {
     try {
-      await api.patch(`/items/${item.id}`, patch)
-      invalidate()
+      await patchItem(item, patch)
     } catch (err) { console.error('saveItem failed', err) }
   }
 
