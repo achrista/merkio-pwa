@@ -7,11 +7,38 @@
 // oder ohne Leerzeichen an der Zahl kleben ("8Stück" wie "8 Stück").
 // "Paprika 8Stück" -> { name: "Paprika", quantity: "8", unit: "Stück" }
 // "Tomaten 3" -> { name: "Tomaten", quantity: "3", unit: null }; sonst quantity/unit: null
+// Spaltenbreiten von list_items im Backend - längere Werte laufen dort in einen
+// MySQL-Fehler ("Data too long for column 'unit'").
+export const MAX_QUANTITY_LEN = 50
+export const MAX_UNIT_LEN = 20
+
 export function parseItemInput(input) {
   const trimmed = (input ?? '').trim()
   const m = trimmed.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(\S.*)?$/)
   if (!m) return { name: trimmed, quantity: null, unit: null }
-  return { name: m[1].trim(), quantity: m[2].replace(',', '.'), unit: m[3]?.trim() || null }
+  const unit = m[3]?.trim() || ''
+  // Passt der Teil hinter der Zahl nicht in die Einheiten-Spalte, ist es keine
+  // Einheit, sondern Fließtext ("Apfelsaft 2 Flaschen aus dem Keller") - dann
+  // bleibt die komplette Eingabe der Name.
+  if (unit.length > MAX_UNIT_LEN) return { name: trimmed, quantity: null, unit: null }
+  return { name: m[1].trim(), quantity: m[2].replace(',', '.'), unit: unit || null }
+}
+
+// Zerlegt das gemeinsame Mengen-Feld ("2 kg") wieder in quantity + unit. Beide
+// Werte werden IMMER gesetzt (null = leeren), sonst bliebe beim Löschen der
+// Menge die alte Einheit am Item hängen.
+export function splitQuantityAndUnit(text) {
+  const trimmed = (text ?? '').trim()
+  const idx = trimmed.indexOf(' ')
+  let quantity = idx < 0 ? trimmed : trimmed.slice(0, idx)
+  let unit = idx < 0 ? '' : trimmed.slice(idx + 1).trim()
+  // Zu lang für die Einheiten-Spalte? Dann ist es Freitext - alles ins
+  // Mengenfeld (breitere Spalte).
+  if (unit.length > MAX_UNIT_LEN) {
+    quantity = trimmed
+    unit = ''
+  }
+  return { quantity: quantity.slice(0, MAX_QUANTITY_LEN) || null, unit: unit || null }
 }
 
 export function normalizeName(s) {

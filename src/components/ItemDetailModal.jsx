@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Trash2 } from 'lucide-react'
 import { CATEGORY_ICONS, memberDisplayName, parseAssignedIds } from './ItemRow'
+import { splitQuantityAndUnit } from '../utils/itemInput'
 
 const BLUE = '#0050AA'
 const ICON_KEYS = Object.keys(CATEGORY_ICONS)
@@ -43,7 +44,9 @@ export default function ItemDetailModal({ item, stores, members, listType, onClo
       patch.dueDate = dueDate || null
       patch.assignedTo = assignedIds.length ? assignedIds.join(',') : null
     } else {
-      patch.quantity = quantity.trim() || null
+      const qty = splitQuantityAndUnit(quantity)
+      patch.quantity = qty.quantity
+      patch.unit = qty.unit
       patch.storeId = storeId ?? null
     }
     onSave(patch)
