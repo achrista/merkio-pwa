@@ -1,6 +1,6 @@
 # Merkio – Web-App (PWA)
 
-Progressive Web App von **Merkio** – gemeinsame Listen (Einkauf, To-dos, Notizen) in Echtzeit. Volle Parität zur Android-App, läuft im Browser und ist installierbar.
+Progressive Web App von **Merkio** – gemeinsame Listen (Einkauf, To-dos, Notizen, Rezepte) in Echtzeit. Volle Parität zur Android-App, läuft im Browser und ist installierbar.
 
 **Live:** https://app.merkio.de · Backend: https://api.merkio.de · Landing: https://merkio.de
 
@@ -16,7 +16,8 @@ Progressive Web App von **Merkio** – gemeinsame Listen (Einkauf, To-dos, Notiz
 
 ## Features
 
-- Gruppen, Listen (Einkauf/To-do/Notizen), Items, Märkte, Mitgliederverwaltung
+- Gruppen, Listen (Einkauf/To-do/Notizen/Rezepte), Items, Märkte, Mitgliederverwaltung
+- **Rezepte** – einlesen aus Link, Datei (PDF auch als Scan, Word, Text, Foto) oder Text; nach Kategorie sortierte Ablage mit Markierungen; Portionen wählen und Zutaten auf eine Einkaufsliste setzen; Editor; Export als PDF und für Culinola (`RecipesScreen`, `components/Recipe*.jsx`, `utils/recipe.js`)
 - Echtzeit-Sync über SSE (`/lists/:id/events`, Token als Query-Param)
 - **Dark Mode** – System + manueller Umschalter (Einstellungen → Darstellung)
 - **Feedback** – Sterne (1–5) + Kommentar (Einstellungen → Feedback) → `POST /feedback`
