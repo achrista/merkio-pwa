@@ -179,7 +179,9 @@
     "add_count": "Add ({{count}})",
     "restore": "Restore",
     "recipe_added_one": "{{count}} ingredient added from recipe",
-    "recipe_added_other": "{{count}} ingredients added from recipe"
+    "recipe_added_other": "{{count}} ingredients added from recipe",
+    "note_undo": "Undo",
+    "note_category": "Category"
   },
   "recipes": {
     "cat_cakes": "Cakes & Tarts",

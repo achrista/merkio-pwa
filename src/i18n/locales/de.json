@@ -179,7 +179,9 @@
     "add_count": "Hinzufügen ({{count}})",
     "restore": "Wiederherstellen",
     "recipe_added_one": "{{count}} Zutat aus Rezept hinzugefügt",
-    "recipe_added_other": "{{count}} Zutaten aus Rezept hinzugefügt"
+    "recipe_added_other": "{{count}} Zutaten aus Rezept hinzugefügt",
+    "note_undo": "Rückgängig",
+    "note_category": "Kategorie"
   },
   "recipes": {
     "cat_cakes": "Kuchen & Torten",

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Trash2, ChevronRight } from 'lucide-react'
+import { Plus, Search, Trash2 } from 'lucide-react'
 import api from '../api/client'
 import ScreenHeader from '../components/ScreenHeader'
 import RecipeView from '../components/RecipeView'
@@ -256,10 +256,10 @@ export default function RecipesScreen({ listName }) {
               <span className="text-xs text-gray-400">({group.recipes.length})</span>
             </div>
             {group.recipes.map(({ item, content }) => (
+              <div key={item.id} className="flex items-center bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <button
-                key={item.id}
                 onClick={() => setOpenId(item.id)}
-                className="flex items-center w-full bg-white border border-gray-100 rounded-xl p-2 gap-3 text-left shadow-sm hover:shadow-md transition-shadow"
+                className="flex items-center flex-1 min-w-0 p-2 gap-3 text-left"
               >
                 <RecipeThumb item={item} />
                 <div className="min-w-0 flex-1">
@@ -271,8 +271,12 @@ export default function RecipesScreen({ listName }) {
                     <span className="truncate">{[content.time, content.tags.join(', ')].filter(Boolean).join(' · ')}</span>
                   </div>
                 </div>
-                <ChevronRight size={18} color="#aaa" className="shrink-0" />
               </button>
+              {/* Papierkorb wie in den anderen Listen: das Rezept wandert in „Gelöscht“ */}
+              <button onClick={() => trash(item)} title={t('common.delete')} aria-label={t('common.delete')} className="p-2 mr-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 shrink-0">
+                <Trash2 size={16} />
+              </button>
+              </div>
             ))}
           </div>
         ))}

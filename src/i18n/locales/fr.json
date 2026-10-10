@@ -179,7 +179,9 @@
     "add_count": "Ajouter ({{count}})",
     "restore": "Restaurer",
     "recipe_added_one": "{{count}} ingrédient ajouté depuis la recette",
-    "recipe_added_other": "{{count}} ingrédients ajoutés depuis la recette"
+    "recipe_added_other": "{{count}} ingrédients ajoutés depuis la recette",
+    "note_undo": "Annuler",
+    "note_category": "Catégorie"
   },
   "recipes": {
     "cat_cakes": "Gâteaux & tartes",

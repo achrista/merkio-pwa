@@ -4,7 +4,9 @@ import { useEditor, EditorContent, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import { TextStyle, Color } from '@tiptap/extension-text-style'
-import { X, Trash2, Bold, Italic, UnderlineIcon, List } from 'lucide-react'
+import { X, Trash2, Bold, Italic, UnderlineIcon, List, Undo2 } from 'lucide-react'
+import { CATEGORY_ICONS } from './ItemRow'
+import { TODO_CATEGORIES } from '../utils/categories'
 
 const YELLOW = 'var(--note-paper)' // Notiz-Papier: hell-gelb / im Dark Mode dunkel (siehe index.css)
 const BLUE = '#0050AA'
@@ -23,6 +25,8 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
   const { t } = useTranslation()
   const [title, setTitle] = useState(item?.name ?? '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  // Kategorie der Notiz – derselbe Satz wie bei To-dos; danach lässt sich die Notizliste gruppieren
+  const [category, setCategory] = useState(TODO_CATEGORIES.includes(item?.iconKey) ? item.iconKey : 'other_todo')
 
   const editor = useEditor({
     extensions: [StarterKit, Underline, TextStyle, Color],
@@ -44,12 +48,13 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
       underline: e?.isActive('underline') ?? false,
       bulletList: e?.isActive('bulletList') ?? false,
       color: e?.getAttributes('textStyle')?.color ?? null,
+      canUndo: e?.can().undo() ?? false,
     }),
   })
 
   function handleSave() {
     const content = editor?.getHTML() ?? ''
-    onSave(title, content)
+    onSave(title, content, category)
   }
 
   function applyColor(value) {
@@ -68,6 +73,17 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
           <X size={22} color={BLUE} />
         </button>
         <span className="flex-1" />
+
+        {/* Rückgängig: nimmt die letzten Änderungen am Text zurück (Verlauf des Editors) */}
+        <button
+          onClick={() => editor?.chain().focus().undo().run()}
+          disabled={!toolbar?.canUndo}
+          className="p-1.5 rounded text-gray-700 hover:bg-yellow-200 disabled:opacity-30 disabled:hover:bg-transparent"
+          title={t('items.note_undo')}
+          aria-label={t('items.note_undo')}
+        >
+          <Undo2 size={18} />
+        </button>
 
         {/* Format buttons */}
         <button
@@ -137,7 +153,18 @@ export default function NoteEditor({ item, onClose, onSave, onDelete }) {
       </div>
 
       {/* Title */}
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 space-y-3">
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          aria-label={t('items.note_category')}
+          title={t('items.note_category')}
+          className="text-sm bg-transparent border border-yellow-300 rounded-lg px-2 py-1 text-gray-700 outline-none"
+        >
+          {TODO_CATEGORIES.map((key) => (
+            <option key={key} value={key}>{CATEGORY_ICONS[key]} {t('items.cat_' + key)}</option>
+          ))}
+        </select>
         <input
           autoFocus={!item?.name}
           type="text"

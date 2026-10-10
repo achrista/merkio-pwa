@@ -78,8 +78,9 @@ export default function ItemsScreen() {
   const storesEnabled = (settingsData?.settings?.storesEnabled ?? 1) === 1
   const activeStores = stores.filter((s) => s.active)
   const canGroupByStore = !isNotes && !isTodo && storesEnabled && activeStores.length > 0
-  const canGroupByCategory = !isNotes
-  const validCategories = isTodo ? TODO_CATEGORIES : SHOPPING_CATEGORIES
+  const canGroupByCategory = true
+  // Notizen tragen dieselben Kategorien wie To-dos
+  const validCategories = isTodo || isNotes ? TODO_CATEGORIES : SHOPPING_CATEGORIES
   const categoryOrder = resolveCategoryOrder(settingsData?.settings?.categoryOrder, validCategories)
 
   // Shared group note for this list (visible to all members) – key "list"
@@ -222,9 +223,9 @@ export default function ItemsScreen() {
     } catch (err) { console.error('restore failed', err) }
   }
 
-  async function saveNote(item, name, content) {
+  async function saveNote(item, name, content, iconKey) {
     try {
-      await patchItem(item, { name, content })
+      await patchItem(item, { name, content, ...(iconKey ? { iconKey } : {}) })
     } catch (err) { console.error('saveNote failed', err) }
   }
 
@@ -301,7 +302,7 @@ export default function ItemsScreen() {
       const groups = []
       const usedIds = new Set()
       for (const key of categoryOrder) {
-        const its = activeItems.filter((i) => (i.iconKey || 'other') === key)
+        const its = activeItems.filter((i) => (i.iconKey || (isNotes ? 'other_todo' : 'other')) === key)
         its.forEach((i) => usedIds.add(i.id))
         if (its.length) groups.push({ key: `cat-${key}`, label: `${CATEGORY_ICONS[key] ?? '📦'} ${t('items.cat_' + key)}`, items: its })
       }
@@ -359,6 +360,24 @@ export default function ItemsScreen() {
       onClick={() => setOpenItem(item)}
       done={done}
     />
+  )
+
+  const renderNote = (item) => (
+    <button
+      key={item.id}
+      onClick={() => setOpenNote(item)}
+      className="flex items-start w-full bg-yellow-50 border border-yellow-200 rounded-xl p-3 gap-3 text-left hover:bg-yellow-100 transition-colors"
+    >
+      <StickyNote size={18} color="#ca8a04" className="mt-0.5 shrink-0" />
+      <div className="min-w-0">
+        <div className="font-medium text-gray-800 text-sm">{item.name}</div>
+        {item.createdAt && (
+          <div className="text-xs text-gray-400 mt-0.5">
+            {new Date(item.createdAt).toLocaleDateString()}
+          </div>
+        )}
+      </div>
+    </button>
   )
 
   const toggleBtn = (active, onClick, Icon, label) => (
@@ -457,7 +476,7 @@ export default function ItemsScreen() {
       </div>
 
       {/* Grouping toolbar */}
-      {(canGroupByStore || canGroupByCategory || isTodo) && !isNotes && (
+      {(canGroupByStore || canGroupByCategory || isTodo) && (
         <div className="px-4 py-2 bg-white border-b border-gray-100 flex gap-2 items-center">
           {canGroupByStore && toggleBtn(groupByStore, () => { setGroupByStore((v) => !v); setGroupByCategory(false) }, Store, t('items.group_by_store'))}
           {canGroupByCategory && toggleBtn(groupByCategory, () => { setGroupByCategory((v) => !v); setGroupByStore(false); setGroupByPriority(false) }, LayoutList, t('items.group_by_category'))}
@@ -515,23 +534,17 @@ export default function ItemsScreen() {
         {/* Notes view */}
         {isNotes && (
           <>
-            {activeItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setOpenNote(item)}
-                className="flex items-start w-full bg-yellow-50 border border-yellow-200 rounded-xl p-3 gap-3 text-left hover:bg-yellow-100 transition-colors"
-              >
-                <StickyNote size={18} color="#ca8a04" className="mt-0.5 shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-medium text-gray-800 text-sm">{item.name}</div>
-                  {item.createdAt && (
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {new Date(item.createdAt).toLocaleDateString()}
+            {groups
+              ? groups.map((g) => (
+                  <div key={g.key} className="space-y-1.5">
+                    <div className="flex items-center gap-2 pt-2 pb-0.5">
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{g.label}</span>
+                      <span className="text-xs text-gray-400">({g.items.length})</span>
                     </div>
-                  )}
-                </div>
-              </button>
-            ))}
+                    {g.items.map(renderNote)}
+                  </div>
+                ))
+              : activeItems.map(renderNote)}
 
             {doneItems.length > 0 && (
               <>
@@ -587,7 +600,7 @@ export default function ItemsScreen() {
         <NoteEditor
           item={openNote}
           onClose={() => setOpenNote(null)}
-          onSave={(name, content) => { saveNote(openNote, name, content); setOpenNote(null) }}
+          onSave={(name, content, iconKey) => { saveNote(openNote, name, content, iconKey); setOpenNote(null) }}
           onDelete={() => { toggleItem(openNote); setOpenNote(null) }}
         />
       )}
