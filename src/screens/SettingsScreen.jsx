@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, Star, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
+import { Trash2, Store, ChevronRight, ChevronDown, ShoppingCart, CheckSquare, StickyNote, ChefHat, Star, Users, Mail, Copy, Check, UserMinus, LogOut, Pencil, X } from 'lucide-react'
 import api from '../api/client'
 import i18n from '../i18n/index.js'
 import { getTheme, setTheme } from '../theme.js'
@@ -14,6 +14,7 @@ const LANGS = ['de', 'en', 'fr']
 function ListTypeIcon({ type }) {
   if (type === 'todo') return <CheckSquare size={15} color={BLUE} />
   if (type === 'notes') return <StickyNote size={15} color={BLUE} />
+  if (type === 'recipes') return <ChefHat size={15} color={BLUE} />
   return <ShoppingCart size={15} color={BLUE} />
 }
 

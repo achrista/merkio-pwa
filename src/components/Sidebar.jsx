@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { X, Settings, LogOut, ShoppingCart, CheckSquare, StickyNote, Plus, ChevronRight } from 'lucide-react'
+import { X, Settings, LogOut, ShoppingCart, CheckSquare, StickyNote, ChefHat, Plus, ChevronRight } from 'lucide-react'
 import GroupAvatar from './GroupAvatar'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ const BLUE = '#0050AA'
 function ListTypeIcon({ type }) {
   if (type === 'todo') return <CheckSquare size={16} color={BLUE} />
   if (type === 'notes') return <StickyNote size={16} color={BLUE} />
+  if (type === 'recipes') return <ChefHat size={16} color={BLUE} />
   return <ShoppingCart size={16} color={BLUE} />
 }
 

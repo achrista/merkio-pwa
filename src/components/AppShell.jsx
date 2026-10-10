@@ -7,7 +7,7 @@ import Sidebar from './Sidebar'
 import TopBar from './TopBar'
 import GroupsScreen from '../screens/GroupsScreen'
 import ListsScreen from '../screens/ListsScreen'
-import ItemsScreen from '../screens/ItemsScreen'
+import ListScreen from '../screens/ListScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import StoresScreen from '../screens/StoresScreen'
 
@@ -83,7 +83,7 @@ export default function AppShell({ onLogout }) {
               />
             } />
             <Route path="/groups/:groupId/lists" element={<ListsScreen />} />
-            <Route path="/groups/:groupId/lists/:listId/items" element={<ItemsScreen />} />
+            <Route path="/groups/:groupId/lists/:listId/items" element={<ListScreen />} />
             <Route path="/settings" element={<SettingsScreen onLogout={onLogout} onGroupsChanged={() => queryClient.invalidateQueries({ queryKey: ['groups'] })} />} />
             <Route path="/groups/:groupId/stores" element={<StoresScreen />} />
           </Routes>

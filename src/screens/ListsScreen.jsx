@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, ShoppingCart, CheckSquare, StickyNote, ChevronRight } from 'lucide-react'
+import { Plus, ShoppingCart, CheckSquare, StickyNote, ChefHat, ChevronRight } from 'lucide-react'
 import api from '../api/client'
 
 const BLUE = '#0050AA'
@@ -11,6 +11,7 @@ const YELLOW = '#FFF000'
 function ListTypeIcon({ type, size = 20 }) {
   if (type === 'todo') return <CheckSquare size={size} color={BLUE} />
   if (type === 'notes') return <StickyNote size={size} color={BLUE} />
+  if (type === 'recipes') return <ChefHat size={size} color={BLUE} />
   return <ShoppingCart size={size} color={BLUE} />
 }
 
@@ -25,6 +26,7 @@ function CreateListDialog({ groupId, onClose, onCreated }) {
     ['shopping', t('lists.type_shopping')],
     ['todo', t('lists.type_todo')],
     ['notes', t('lists.type_notes')],
+    ['recipes', t('lists.type_recipes')],
   ]
 
   async function handleSubmit(e) {

@@ -3,18 +3,18 @@ import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Plus, Trash2, StickyNote, UtensilsCrossed, Store, Flag, LayoutList, Pencil } from 'lucide-react'
-import api, { getAccessToken } from '../api/client'
+import api from '../api/client'
 import NoteEditor from '../components/NoteEditor'
 import ItemRow, { CATEGORY_ICONS } from '../components/ItemRow'
 import ItemDetailModal from '../components/ItemDetailModal'
 import RecipeDialog from '../components/RecipeDialog'
 import CategoryOrderDialog from '../components/CategoryOrderDialog'
+import { useListEvents } from '../utils/useListEvents'
 import { parseItemInput, isSimilarName, mergeQuantity } from '../utils/itemInput'
 import { resolveCategoryOrder, mergeCategoryOrder, SHOPPING_CATEGORIES, TODO_CATEGORIES } from '../utils/categories'
 
 const BLUE = '#0050AA'
 const YELLOW = '#FFF000'
-const API = import.meta.env.VITE_API_URL ?? 'https://api.merkio.de/api/v1'
 
 export default function ItemsScreen() {
   const { t } = useTranslation()
@@ -120,36 +120,8 @@ export default function ItemsScreen() {
     }
   }, [queryClient, listId, invalidate])
 
-  // SSE real-time updates (named events!)
-  useEffect(() => {
-    const token = getAccessToken()
-    if (!token || !listId) return
-    const url = `${API}/lists/${listId}/events?access_token=${encodeURIComponent(token)}`
-    const es = new EventSource(url)
-    const key = ['items', Number(listId)]
-
-    const upsert = (item) => {
-      queryClient.setQueryData(key, (old) => {
-        const current = old?.items ?? []
-        const exists = current.some((i) => i.id === item.id)
-        return { ...(old ?? {}), items: exists ? current.map((i) => i.id === item.id ? item : i) : [...current, item] }
-      })
-    }
-    const onCreated = (e) => { try { upsert(JSON.parse(e.data)) } catch {} }
-    const onUpdated = (e) => { try { upsert(JSON.parse(e.data)) } catch {} }
-    const onDeleted = (e) => {
-      try {
-        const { id } = JSON.parse(e.data)
-        queryClient.setQueryData(key, (old) => old ? { ...old, items: (old.items ?? []).filter((i) => i.id !== id) } : old)
-      } catch {}
-    }
-
-    es.addEventListener('item_created', onCreated)
-    es.addEventListener('item_updated', onUpdated)
-    es.addEventListener('item_deleted', onDeleted)
-
-    return () => { es.close() }
-  }, [listId, queryClient])
+  // SSE: Änderungen anderer Geräte landen direkt im Query-Cache
+  useListEvents(listId)
 
   // Autocomplete (shopping lists only, debounced)
   useEffect(() => {
@@ -636,6 +608,8 @@ export default function ItemsScreen() {
       {/* Recipe import dialog */}
       {showRecipe && (
         <RecipeDialog
+          groupId={groupId}
+          listId={listId}
           onClose={() => setShowRecipe(false)}
           onImport={importRecipe}
           onNoteUpdate={saveListNote}
