@@ -17,7 +17,9 @@
     "name": "Nom",
     "loading": "Chargement…",
     "error": "Erreur : {{msg}}",
-    "error_code": "Erreur {{code}}"
+    "error_code": "Erreur {{code}}",
+    "update_ready": "Une nouvelle version de Merkio est disponible.",
+    "reload": "Recharger"
   },
   "errorBoundary": {
     "title": "Oups – une erreur est survenue",
@@ -342,7 +344,8 @@
     "remove": "Retirer",
     "delete_list_title": "Supprimer la liste quand même ?",
     "delete_list_text": "« {{name}} » a encore {{count}} entrées actives. Toutes les entrées seront supprimées définitivement.",
-    "delete_anyway": "Supprimer quand même"
+    "delete_anyway": "Supprimer quand même",
+    "about_build": "Version de l’appli web"
   },
   "cat": {
     "food": "Alimentation",

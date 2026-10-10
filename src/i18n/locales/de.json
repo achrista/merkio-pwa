@@ -17,7 +17,9 @@
     "name": "Name",
     "loading": "Laden…",
     "error": "Fehler: {{msg}}",
-    "error_code": "Fehler {{code}}"
+    "error_code": "Fehler {{code}}",
+    "update_ready": "Eine neue Version von Merkio ist da.",
+    "reload": "Neu laden"
   },
   "errorBoundary": {
     "title": "Ups – etwas ist schiefgelaufen",
@@ -342,7 +344,8 @@
     "remove": "Entfernen",
     "delete_list_title": "Liste trotzdem löschen?",
     "delete_list_text": "\"{{name}}\" hat noch {{count}} aktive Einträge. Alle Einträge werden unwiderruflich gelöscht.",
-    "delete_anyway": "Trotzdem löschen"
+    "delete_anyway": "Trotzdem löschen",
+    "about_build": "Stand der Web-App"
   },
   "cat": {
     "food": "Lebensmittel",

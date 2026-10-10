@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // Zeitpunkt des Builds – steht in den Einstellungen unter „Über merkio“, damit sich
+  // erkennen lässt, welche Version der Web-App gerade läuft
+  define: { __BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC') },
   plugins: [
     react(),
     tailwindcss(),
@@ -13,7 +16,7 @@ export default defineConfig({
       manifest: {
         name: 'Merkio',
         short_name: 'Merkio',
-        description: 'Einkaufslisten, To-dos & Notizen',
+        description: 'Einkaufslisten, To-dos, Notizen & Rezepte',
         theme_color: '#0050AA',
         background_color: '#ffffff',
         display: 'standalone',

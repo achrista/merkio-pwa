@@ -17,7 +17,9 @@
     "name": "Name",
     "loading": "Loading…",
     "error": "Error: {{msg}}",
-    "error_code": "Error {{code}}"
+    "error_code": "Error {{code}}",
+    "update_ready": "A new version of Merkio is available.",
+    "reload": "Reload"
   },
   "errorBoundary": {
     "title": "Oops – something went wrong",
@@ -342,7 +344,8 @@
     "remove": "Remove",
     "delete_list_title": "Delete list anyway?",
     "delete_list_text": "\"{{name}}\" still has {{count}} active entries. All entries will be permanently deleted.",
-    "delete_anyway": "Delete anyway"
+    "delete_anyway": "Delete anyway",
+    "about_build": "Web app build"
   },
   "cat": {
     "food": "Groceries",

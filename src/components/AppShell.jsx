@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import api from '../api/client'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
+import UpdateBanner from './UpdateBanner'
 import GroupsScreen from '../screens/GroupsScreen'
 import ListsScreen from '../screens/ListsScreen'
 import ListScreen from '../screens/ListScreen'
@@ -68,6 +69,8 @@ export default function AppShell({ onLogout }) {
           </div>
         </div>
       )}
+
+      <UpdateBanner />
 
       {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

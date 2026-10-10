@@ -688,6 +688,7 @@ export default function SettingsScreen({ onLogout, onGroupsChanged }) {
           label={t('settings.about_licenses')}
           onClick={() => window.open('https://merkio.de/lizenzen.html', '_blank', 'noopener')}
         />
+        <Row label={t('settings.about_build')} value={__BUILD__} />
       </Section>
 
       {/* Account */}
