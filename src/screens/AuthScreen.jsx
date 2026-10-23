@@ -82,6 +82,30 @@ export default function AuthScreen({ onSuccess }) {
     }
   }
 
+  async function handleForgot(e) {
+    e.preventDefault()
+    if (!email) return setError(t('auth.enter_email'))
+    setLoading(true)
+    setError('')
+    try {
+      // Der Server antwortet immer gleich, ob es die Adresse gibt oder nicht.
+      await api.post('/auth/forgot-password', { email: email.trim() })
+      setInfo(t('auth.forgot_sent'))
+      setMode('login')
+    } catch (err) {
+      if (!err.response) setError(t('auth.no_server_response'))
+      else setError(t('auth.connection_failed', { msg: '' }))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function switchMode(next) {
+    setMode(next)
+    setError('')
+    setInfo('')
+  }
+
   function switchLang(lang) {
     setLocale(lang)
     i18n.changeLanguage(lang)
@@ -95,12 +119,12 @@ export default function AuthScreen({ onSuccess }) {
         <div className="px-8 py-6 flex flex-col items-center" style={{ backgroundColor: BLUE }}>
           <img src="/logo-wordmark.png" alt="Merkio" className="h-12 w-auto mb-2" />
           <p className="text-blue-200 text-center text-sm mt-1">
-            {mode === 'login' ? t('auth.login') : t('auth.register')}
+            {mode === 'login' ? t('auth.login') : mode === 'register' ? t('auth.register') : t('auth.forgot_title')}
           </p>
         </div>
 
         <form
-          onSubmit={mode === 'login' ? handleLogin : handleRegister}
+          onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handleForgot}
           className="px-8 py-6 space-y-4"
         >
           {info && (
@@ -108,6 +132,10 @@ export default function AuthScreen({ onSuccess }) {
           )}
           {error && (
             <div className="bg-red-50 text-red-700 rounded-lg px-4 py-3 text-sm">{error}</div>
+          )}
+
+          {mode === 'forgot' && (
+            <p className="text-sm text-gray-600">{t('auth.forgot_hint')}</p>
           )}
 
           <input
@@ -130,7 +158,7 @@ export default function AuthScreen({ onSuccess }) {
             />
           )}
 
-          <div className="relative">
+          {mode !== 'forgot' && <div className="relative">
             <input
               type={showPw ? 'text' : 'password'}
               placeholder={t('auth.password')}
@@ -146,7 +174,7 @@ export default function AuthScreen({ onSuccess }) {
             >
               {showPw ? t('auth.hide_password') : t('auth.show_password')}
             </button>
-          </div>
+          </div>}
 
           {mode === 'register' && (
             <>
@@ -221,10 +249,21 @@ export default function AuthScreen({ onSuccess }) {
             style={{ backgroundColor: BLUE, color: '#fff' }}
           >
             {loading
-              ? (mode === 'login' ? t('auth.logging_in') : t('auth.registering'))
-              : (mode === 'login' ? t('auth.login') : t('auth.register'))
+              ? (mode === 'login' ? t('auth.logging_in') : mode === 'register' ? t('auth.registering') : t('auth.forgot_sending'))
+              : (mode === 'login' ? t('auth.login') : mode === 'register' ? t('auth.register') : t('auth.forgot_send'))
             }
           </button>
+
+          {mode === 'login' && (
+            <button
+              type="button"
+              onClick={() => switchMode('forgot')}
+              className="w-full text-sm text-center"
+              style={{ color: BLUE }}
+            >
+              {t('auth.forgot_password')}
+            </button>
+          )}
 
           {needsVerification && (
             <button
@@ -238,11 +277,11 @@ export default function AuthScreen({ onSuccess }) {
 
           <button
             type="button"
-            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setInfo('') }}
+            onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
             className="w-full text-sm text-center"
             style={{ color: BLUE }}
           >
-            {mode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}
+            {mode === 'login' ? t('auth.switch_to_register') : mode === 'register' ? t('auth.switch_to_login') : t('auth.back_to_login')}
           </button>
         </form>
       </div>

@@ -59,7 +59,15 @@
     "register_success": "Registrierung erfolgreich. Bitte logge dich nun ein.",
     "email_taken": "Diese E-Mail ist bereits vergeben.",
     "group_not_found": "Gruppe nicht gefunden. Invite-Code prüfen.",
-    "register_failed": "Registrierung fehlgeschlagen ({{code}})."
+    "register_failed": "Registrierung fehlgeschlagen ({{code}}).",
+    "forgot_password": "Passwort vergessen?",
+    "forgot_title": "Passwort zurücksetzen",
+    "forgot_hint": "Gib deine E-Mail-Adresse ein. Du bekommst eine Mail mit einem Link, über den du ein neues Passwort festlegst.",
+    "forgot_send": "Link senden",
+    "forgot_sending": "Wird gesendet…",
+    "forgot_sent": "Falls ein Konto mit dieser Adresse existiert, ist eine Mail unterwegs. Der Link darin ist 1 Stunde gültig.",
+    "enter_email": "Bitte gib deine E-Mail-Adresse ein.",
+    "back_to_login": "Zurück zur Anmeldung"
   },
   "groups": {
     "title": "Meine Gruppen",

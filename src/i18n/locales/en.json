@@ -59,7 +59,15 @@
     "register_success": "Registration successful. Please sign in now.",
     "email_taken": "This email is already taken.",
     "group_not_found": "Group not found. Check the invite code.",
-    "register_failed": "Registration failed ({{code}})."
+    "register_failed": "Registration failed ({{code}}).",
+    "forgot_password": "Forgot password?",
+    "forgot_title": "Reset password",
+    "forgot_hint": "Enter your email address. You will receive an email with a link to set a new password.",
+    "forgot_send": "Send link",
+    "forgot_sending": "Sending…",
+    "forgot_sent": "If an account exists for this address, an email is on its way. The link in it is valid for 1 hour.",
+    "enter_email": "Please enter your email address.",
+    "back_to_login": "Back to sign in"
   },
   "groups": {
     "title": "My groups",

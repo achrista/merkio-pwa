@@ -59,7 +59,15 @@
     "register_success": "Inscription réussie. Veuillez vous connecter.",
     "email_taken": "Cet e-mail est déjà utilisé.",
     "group_not_found": "Groupe introuvable. Vérifiez le code d'invitation.",
-    "register_failed": "Échec de l'inscription ({{code}})."
+    "register_failed": "Échec de l'inscription ({{code}}).",
+    "forgot_password": "Mot de passe oublié ?",
+    "forgot_title": "Réinitialiser le mot de passe",
+    "forgot_hint": "Saisissez votre adresse e-mail. Vous recevrez un e-mail avec un lien pour définir un nouveau mot de passe.",
+    "forgot_send": "Envoyer le lien",
+    "forgot_sending": "Envoi…",
+    "forgot_sent": "Si un compte existe pour cette adresse, un e-mail est en route. Le lien est valable 1 heure.",
+    "enter_email": "Veuillez saisir votre adresse e-mail.",
+    "back_to_login": "Retour à la connexion"
   },
   "groups": {
     "title": "Mes groupes",
